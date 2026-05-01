@@ -1,0 +1,3277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QLTKCK">
+<title>QLTKCK Mobile</title>
+
+<!-- PWA manifest & icons -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+
+<style>
+:root {
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --ink: #0f172a;
+  --ink-2: #475569;
+  --ink-3: #94a3b8;
+  --line: #e2e8f0;
+  --line-2: #cbd5e1;
+
+  --primary: #0f172a;
+  --primary-2: #1e293b;
+  --accent: #f59e0b;
+
+  --red: #dc2626;
+  --red-bg: #fef2f2;
+  --red-line: #fecaca;
+  --orange: #ea580c;
+  --orange-bg: #fff7ed;
+  --orange-line: #fed7aa;
+  --green: #059669;
+  --green-bg: #ecfdf5;
+  --green-line: #a7f3d0;
+  --blue: #2563eb;
+  --blue-bg: #eff6ff;
+  --blue-line: #bfdbfe;
+  --purple: #7c3aed;
+  --purple-bg: #f5f3ff;
+  --purple-line: #ddd6fe;
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 2px rgba(15,23,42,.06), 0 1px 1px rgba(15,23,42,.04);
+  --shadow-md: 0 4px 12px rgba(15,23,42,.08), 0 1px 4px rgba(15,23,42,.06);
+  --shadow-lg: 0 12px 28px rgba(15,23,42,.16), 0 4px 12px rgba(15,23,42,.10);
+
+  --safe-top: env(safe-area-inset-top, 0);
+  --safe-bottom: env(safe-area-inset-bottom, 0);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+button { border: none; background: none; cursor: pointer; }
+input, textarea, select { border: none; outline: none; background: transparent; }
+
+/* ============ HEADER ============ */
+.app-header {
+  background: linear-gradient(180deg, var(--primary) 0%, var(--primary-2) 100%);
+  color: #fff;
+  padding: calc(var(--safe-top) + 14px) 16px 14px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.05);
+}
+.app-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.app-header__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.app-header__logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--primary);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 16px;
+}
+.app-header__actions { display: flex; gap: 6px; }
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.10);
+  color: #fff;
+  font-size: 17px;
+  transition: background .15s, transform .1s;
+}
+.icon-btn:active { background: rgba(255,255,255,.20); transform: scale(0.92); }
+.icon-btn--accent {
+  background: var(--accent);
+  color: var(--primary);
+}
+.icon-btn--accent:active { background: #fbbf24; }
+
+.app-header__file {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255,255,255,.75);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.dot.empty { background: var(--ink-3); }
+
+/* Save indicator */
+.save-ind {
+  font-size: 11px;
+  color: rgba(255,255,255,.6);
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.save-ind__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.save-ind__dot--ok   { background: #22c55e; }
+.save-ind__dot--warn { background: var(--accent); animation: pulse-dot 2s ease-in-out infinite; }
+.save-ind__warn { color: var(--accent); font-weight: 600; }
+.save-ind--warn { color: rgba(255,255,255,.85); }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: .55; transform: scale(0.8); }
+}
+
+/* OneDrive sync indicator (clickable button in header) */
+.od-ind {
+  margin-top: 8px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  transition: all .15s;
+}
+.od-ind:active { transform: scale(0.98); background: rgba(255,255,255,.14); }
+.od-ind__icon { font-size: 14px; line-height: 1; }
+.od-ind__label {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.od-ind--ok {
+  background: rgba(34,197,94,.16);
+  border-color: rgba(34,197,94,.35);
+}
+.od-ind--ok .od-ind__icon { color: #4ade80; }
+.od-ind--busy {
+  background: rgba(245,158,11,.16);
+  border-color: rgba(245,158,11,.35);
+}
+.od-ind--err {
+  background: rgba(239,68,68,.16);
+  border-color: rgba(239,68,68,.4);
+  color: #fca5a5;
+}
+
+/* ============ TABS ============ */
+.tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: 6px 6px 0;
+  gap: 2px;
+}
+.tab {
+  flex: 1;
+  padding: 12px 4px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 66px;
+  border-radius: 10px 10px 0 0;
+  transition: background .15s, color .15s;
+}
+.tab:active { background: var(--surface-2); }
+.tab__icon { font-size: 22px; line-height: 1; }
+.tab__label { display: flex; align-items: center; gap: 5px; }
+.tab__count {
+  background: var(--line);
+  color: var(--ink-2);
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-weight: 700;
+  min-width: 20px;
+  line-height: 1.4;
+}
+.tab.active {
+  color: var(--ink);
+}
+.tab.active .tab__count {
+  background: var(--accent);
+  color: var(--primary);
+}
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 25%;
+  right: 25%;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--ink);
+}
+
+/* Sticky bar wraps tabs + filters so they pin together below header */
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgba(15,23,42,.06);
+}
+
+/* ============ FILTERS ============ */
+.filters {
+  display: flex;
+  gap: 7px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+}
+.filters__scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex: 1;
+  align-items: center;
+}
+.filters__scroll::-webkit-scrollbar { display: none; }
+.chip {
+  padding: 9px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  transition: all .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 36px;
+}
+.chip:active { transform: scale(0.95); }
+.chip.active {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+.chip__count {
+  background: rgba(0,0,0,.08);
+  padding: 0 5px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.chip.active .chip__count {
+  background: rgba(255,255,255,.20);
+}
+
+/* Advanced filter trigger button — pinned outside scrollable chips */
+.chip--adv {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+  flex-shrink: 0;
+  padding: 9px 16px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(15,23,42,.18);
+}
+.chip--adv.has-active {
+  background: var(--accent);
+  color: var(--primary);
+  border-color: var(--accent);
+  box-shadow: 0 2px 6px rgba(245,158,11,.35);
+}
+
+/* Active filter summary strip */
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px 0;
+  background: var(--bg);
+}
+.active-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px 4px 10px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.active-filter-chip__x {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.20);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  cursor: pointer;
+}
+.active-filter-chip__clear {
+  background: var(--red-bg);
+  color: var(--red);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid var(--red-line);
+}
+
+/* Advanced filter modal content */
+.adv-section {
+  margin-bottom: 18px;
+}
+.adv-section__title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+.adv-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.adv-search {
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: 10px;
+  font-size: 13px;
+}
+.adv-search:focus {
+  border-color: var(--ink);
+  background: var(--surface);
+  outline: none;
+}
+.adv-opt {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all .15s;
+  min-height: 38px;
+}
+.adv-opt:active { transform: scale(0.97); }
+.adv-opt.active {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+  font-weight: 600;
+}
+.adv-opt__count {
+  background: rgba(0,0,0,.08);
+  font-size: 10.5px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+.adv-opt.active .adv-opt__count {
+  background: rgba(255,255,255,.20);
+}
+
+.sort-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.sort-select {
+  flex: 1;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.sort-dir {
+  width: 50px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  transition: all .15s;
+}
+.sort-dir:active { transform: scale(0.95); }
+
+/* ============ SEARCH ============ */
+.search {
+  padding: 10px 12px 0;
+  background: var(--bg);
+}
+.search__input {
+  width: 100%;
+  padding: 11px 14px 11px 40px;
+  background: var(--surface);
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color .15s, box-shadow .15s;
+}
+.search__input:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(15,23,42,.08);
+}
+.search__wrap {
+  position: relative;
+}
+.search__icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-3);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+/* ============ MAIN ============ */
+main {
+  padding: 12px 12px calc(100px + var(--safe-bottom));
+  min-height: calc(100vh - 200px);
+}
+
+/* ============ EMPTY ============ */
+.empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--ink-3);
+}
+.empty__icon {
+  font-size: 56px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+.empty__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 4px;
+}
+.empty__hint {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* ============ GROUP HEADER ============ */
+.group {
+  margin-bottom: 20px;
+  animation: fadeUp .35s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.group__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(15,23,42,.12);
+  border-left: 4px solid var(--accent);
+}
+.group__count {
+  background: var(--accent);
+  color: var(--primary);
+  padding: 2px 9px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Sub-group (nested grouping inside a parent group) */
+.subgroup {
+  margin: 8px 0 14px 6px;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
+}
+
+/* Tab swipe slide-in animations */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide-in-left  { animation: slideInLeft  .2s ease-out; }
+.slide-in-right { animation: slideInRight .2s ease-out; }
+.subgroup__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  background: #fef3c7;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent);
+}
+.subgroup__count {
+  background: var(--accent);
+  color: var(--primary);
+  padding: 1px 7px;
+  border-radius: 9px;
+  font-size: 10.5px;
+  font-weight: 800;
+  margin-left: auto;
+  flex-shrink: 0;
+  border: none;
+}
+
+/* ============ TASK CARD ============ */
+.task {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 14px 14px 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line);
+  position: relative;
+  box-shadow: var(--shadow-sm);
+  transition: transform .15s, box-shadow .15s;
+}
+.task:active { transform: scale(0.99); }
+.task::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  background: var(--ink-3);
+  border-radius: 0 3px 3px 0;
+}
+.task--urgent::before { background: var(--red); }
+.task--normal::before { background: var(--orange); }
+.task--low::before    { background: var(--green); }
+.task--done {
+  opacity: 0.65;
+  background: var(--surface-2);
+}
+.task--done::before { background: var(--ink-3); }
+.task--done .task__title {
+  text-decoration: line-through;
+  color: var(--ink-2);
+}
+.task--star {
+  background: linear-gradient(180deg, #fffbeb 0%, var(--surface) 60%);
+}
+
+.task__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.task__title {
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink);
+  word-break: break-word;
+  flex: 1;
+}
+.task__star {
+  color: var(--accent);
+  font-size: 16px;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.task__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-size: 11.5px;
+  color: var(--ink-2);
+  margin-top: 8px;
+}
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+.meta-item__icon { opacity: 0.7; }
+
+.task__sub {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+/* Date comparison row: deadline → expected → finished */
+.task__dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+}
+.date-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  font-size: 11px;
+  min-width: 0;
+}
+.date-cell__label {
+  color: var(--ink-3);
+  font-weight: 500;
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+.date-cell__val {
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.date-cell--empty .date-cell__val {
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.date-cell--overdue .date-cell__val {
+  color: var(--red);
+}
+.date-cell--overdue .date-cell__label {
+  color: var(--red);
+  font-weight: 700;
+}
+.date-cell--ontime .date-cell__val {
+  color: var(--green);
+}
+.date-cell--late .date-cell__val {
+  color: var(--orange);
+}
+
+.task__subs {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.subitem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+.subitem__check {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all .15s;
+}
+.subitem--done .subitem__check {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+.subitem__text { flex: 1; word-break: break-word; }
+.subitem--done .subitem__text {
+  text-decoration: line-through;
+  color: var(--ink-3);
+}
+
+/* Status / priority pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+.pill--todo  { background: var(--blue-bg);   color: var(--blue);   }
+.pill--doing { background: var(--orange-bg); color: var(--orange); }
+.pill--done  { background: var(--green-bg);  color: var(--green);  }
+.pill--archived { background: var(--purple-bg); color: var(--purple); }
+.pill--overdue { background: var(--red-bg); color: var(--red); }
+.pill--today { background: var(--orange-bg); color: var(--orange); }
+.pill--soon { background: var(--blue-bg); color: var(--blue); }
+
+/* Actions */
+.task__actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.action-btn {
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform .1s, opacity .15s;
+}
+.action-btn:active { transform: scale(0.95); }
+.action-btn--ghost  { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); }
+.action-btn--primary { background: var(--ink); color: #fff; }
+.action-btn--success { background: var(--green); color: #fff; }
+.action-btn--warn   { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-line); }
+.action-btn--danger { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-line); }
+
+/* ============ FAB ============ */
+.fab {
+  position: fixed;
+  bottom: calc(20px + var(--safe-bottom));
+  right: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--accent);
+  font-size: 26px;
+  font-weight: 300;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 20px rgba(15,23,42,.4), 0 2px 6px rgba(15,23,42,.2);
+  z-index: 50;
+  transition: transform .15s;
+}
+.fab:active { transform: scale(0.92); }
+
+/* ============ MODAL ============ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 200;
+  display: none;
+  align-items: flex-end;
+  animation: fadeIn .2s;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-backdrop.show { display: flex; }
+.modal {
+  background: var(--surface);
+  width: 100%;
+  max-height: 92vh;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp .3s cubic-bezier(0.32, 0.72, 0.0, 1);
+  padding-bottom: var(--safe-bottom);
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal__handle {
+  width: 36px;
+  height: 4px;
+  background: var(--line-2);
+  border-radius: 2px;
+  margin: 8px auto 4px;
+  flex-shrink: 0;
+}
+.modal__head {
+  padding: 12px 16px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.modal__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.modal__body {
+  padding: 14px 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+.modal__footer {
+  padding: 12px 16px;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
+  flex-shrink: 0;
+}
+.modal__footer .action-btn { flex: 1; justify-content: center; padding: 11px; font-size: 14px; }
+
+.field {
+  margin-bottom: 14px;
+}
+.field__label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.field__input,
+.field__textarea,
+.field__select {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.field__input:focus,
+.field__textarea:focus,
+.field__select:focus {
+  border-color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(15,23,42,.07);
+}
+.field__textarea { min-height: 70px; resize: vertical; }
+.field__row { display: flex; gap: 8px; }
+.field__row > * { flex: 1; }
+
+/* Smart date picker */
+.datepick {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.datepick__display {
+  flex: 1;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.datepick__btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: all .15s;
+}
+.datepick__btn:active { transform: scale(0.94); background: var(--line); }
+.datepick__btn--clear {
+  font-size: 13px;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+.datepick__quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+.quick-chip {
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  transition: all .15s;
+}
+.quick-chip:active {
+  transform: scale(0.96);
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+
+.priority-pills {
+  display: flex;
+  gap: 6px;
+}
+.priority-pills label {
+  flex: 1;
+  text-align: center;
+  padding: 10px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: all .15s;
+}
+.priority-pills input { display: none; }
+.priority-pills input:checked + label.p-urgent { background: var(--red); color: #fff; border-color: var(--red); }
+.priority-pills input:checked + label.p-normal { background: var(--orange); color: #fff; border-color: var(--orange); }
+.priority-pills input:checked + label.p-low    { background: var(--green); color: #fff; border-color: var(--green); }
+
+/* ============ TOAST ============ */
+.toast {
+  position: fixed;
+  bottom: calc(96px + var(--safe-bottom));
+  left: 50%;
+  transform: translate(-50%, 16px);
+  background: var(--ink);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s, transform .25s;
+  max-width: 92%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: var(--shadow-lg);
+}
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ============ INSTALL HINT ============ */
+.install-hint {
+  position: fixed;
+  bottom: calc(20px + var(--safe-bottom));
+  left: 12px;
+  right: 12px;
+  background: var(--ink);
+  color: #fff;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  z-index: 60;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp .3s ease;
+}
+.install-hint.show { display: flex; }
+.install-hint__text {
+  flex: 1;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.install-hint__close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+input[type="file"] { display: none; }
+
+/* small screens / compact */
+@media (max-width: 380px) {
+  body { font-size: 14px; }
+  .task__title { font-size: 14px; }
+  .tab { font-size: 12px; }
+}
+
+/* ============ ADD-TO-HOME GUIDE ============ */
+.guide-step {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  border: 1px solid var(--line);
+}
+.guide-step__num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.guide-step__body {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.guide-step__body b { font-weight: 700; }
+.guide-step__body code {
+  background: var(--ink);
+  color: #fff;
+  padding: 1px 7px;
+  border-radius: 5px;
+  font-size: 12.5px;
+  font-family: ui-monospace, SF Mono, monospace;
+  display: inline-block;
+}
+.guide-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 16px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.guide-section-title:first-child { margin-top: 0; }
+.guide-note {
+  background: var(--blue-bg);
+  border: 1px solid var(--blue-line);
+  color: var(--blue);
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+.guide-warn {
+  background: var(--orange-bg);
+  border: 1px solid var(--orange-line);
+  color: var(--orange);
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+.guide-action {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.guide-action .action-btn { flex: 1; justify-content: center; }
+
+/* dark mode prep — light only for now */
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-header__row">
+    <div class="app-header__title">
+      <div class="app-header__logo">Q</div>
+      <div>QLTKCK</div>
+    </div>
+    <div class="app-header__actions">
+      <button class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Mở file">📂</button>
+      <button class="icon-btn" onclick="exportJson()" title="Xuất file">💾</button>
+      <button class="icon-btn icon-btn--accent" onclick="showAddToHome()" title="Thêm vào màn hình chính">📲</button>
+      <button class="icon-btn" onclick="showHelp()" title="Trợ giúp">❓</button>
+    </div>
+  </div>
+  <div class="app-header__file">
+    <span class="dot empty" id="fileDot"></span>
+    <span id="fileMeta">Chưa có file dữ liệu</span>
+    <span class="save-ind" id="saveIndicator"></span>
+  </div>
+  <button class="od-ind" id="odIndicator" type="button">
+    <span class="od-ind__icon">☁️</span><span class="od-ind__label">Kết nối OneDrive</span>
+  </button>
+  <input type="file" id="fileInput" accept=".json,application/json" onchange="handleFile(this.files[0])">
+</header>
+
+<div class="sticky-bar">
+
+<nav class="tabs" id="tabs">
+  <button class="tab active" data-tab="tasks">
+    <span class="tab__icon">📋</span>
+    <span class="tab__label">CV <span class="tab__count" id="cnt-tasks">0</span></span>
+  </button>
+  <button class="tab" data-tab="personal">
+    <span class="tab__icon">✏️</span>
+    <span class="tab__label">Cá nhân <span class="tab__count" id="cnt-personal">0</span></span>
+  </button>
+  <button class="tab" data-tab="tracking">
+    <span class="tab__icon">👁</span>
+    <span class="tab__label">Theo dõi <span class="tab__count" id="cnt-tracking">0</span></span>
+  </button>
+</nav>
+
+<div class="filters" id="filters"></div>
+
+</div><!-- /.sticky-bar -->
+
+<div class="active-filters" id="activeFilters" style="display:none;"></div>
+
+<div class="search">
+  <div class="search__wrap">
+    <span class="search__icon">🔍</span>
+    <input type="search" class="search__input" id="searchBox" placeholder="Tìm kiếm..." oninput="render()">
+  </div>
+</div>
+
+<main id="content"></main>
+
+<button class="fab" onclick="openEditor(null)" aria-label="Thêm">＋</button>
+
+<div class="install-hint" id="installHint">
+  <div>📲</div>
+  <div class="install-hint__text">Bấm <b>Cài đặt</b> để thêm vào màn hình chính như app thật.</div>
+  <button class="install-hint__close" id="installBtn">Cài</button>
+  <button class="install-hint__close" onclick="dismissInstallHint()">✕</button>
+</div>
+
+<!-- Advanced filter modal -->
+<div class="modal-backdrop" id="advFilterModal" onclick="if(event.target===this)closeAdvFilter()">
+  <div class="modal">
+    <div class="modal__handle"></div>
+    <div class="modal__head">
+      <div class="modal__title">⚙ Lọc & Sắp xếp</div>
+      <button class="icon-btn" style="background: var(--surface-2); color: var(--ink-2);" onclick="closeAdvFilter()">✕</button>
+    </div>
+    <div class="modal__body" id="advFilterBody"></div>
+    <div class="modal__footer">
+      <button class="action-btn action-btn--ghost" onclick="resetAdvFilters()">↺ Đặt lại</button>
+      <button class="action-btn action-btn--primary" onclick="closeAdvFilter()">✓ Áp dụng</button>
+    </div>
+  </div>
+</div>
+
+<!-- Editor modal -->
+<div class="modal-backdrop" id="editorModal" onclick="if(event.target===this)closeEditor()">
+  <div class="modal">
+    <div class="modal__handle"></div>
+    <div class="modal__head">
+      <div class="modal__title" id="editorTitle">Thêm</div>
+      <button class="icon-btn" style="background: var(--surface-2); color: var(--ink-2);" onclick="closeEditor()">✕</button>
+    </div>
+    <div class="modal__body" id="editorFields"></div>
+    <div class="modal__footer">
+      <button class="action-btn action-btn--danger" id="deleteBtn" onclick="deleteCurrent()" style="display:none;">🗑 Xóa</button>
+      <button class="action-btn action-btn--ghost" onclick="closeEditor()">Hủy</button>
+      <button class="action-btn action-btn--primary" onclick="saveEditor()">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add-to-Home guide modal -->
+<div class="modal-backdrop" id="homeGuideModal" onclick="if(event.target===this)closeHomeGuide()">
+  <div class="modal">
+    <div class="modal__handle"></div>
+    <div class="modal__head">
+      <div class="modal__title">📲 Thêm vào màn hình chính</div>
+      <button class="icon-btn" style="background: var(--surface-2); color: var(--ink-2);" onclick="closeHomeGuide()">✕</button>
+    </div>
+    <div class="modal__body" id="homeGuideBody"></div>
+    <div class="modal__footer">
+      <button class="action-btn action-btn--ghost" onclick="closeHomeGuide()">Đóng</button>
+      <button class="action-btn action-btn--primary" id="homeGuideAction">Cài đặt ngay</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+// ============================================================
+// QLTKCK Mobile PWA — v2 (polished, full filters)
+// ============================================================
+
+const STORAGE_KEY = 'qltkck_pwa_v2';
+
+// ============ ONEDRIVE SYNC CONFIG ============
+const OD_CLIENT_ID = 'b8021097-53e2-4e0f-b339-75281dd09521';
+const OD_REDIRECT  = 'https://qdung48ctu-droid.github.io/qltkck/';
+const OD_AUTHORITY = 'https://login.microsoftonline.com/consumers';  // Personal MS accounts
+const OD_SCOPES    = 'Files.ReadWrite offline_access User.Read';
+const OD_FILE_PATH = 'Ung dung Web/Quan ly TKCK/QLTKCK_data.json';
+const OD_FETCH_INTERVAL_MS = 30000;   // 30 seconds
+const OD_UPLOAD_DEBOUNCE_MS = 3000;   // 3 seconds after last edit
+
+// ============ ONEDRIVE STATE ============
+const OD = {
+  accessToken: null,
+  refreshToken: null,
+  expiresAt: 0,
+  account: null,        // { name, username }
+  remoteEtag: null,     // for conflict detection
+  fetchTimer: null,
+  uploadTimer: null,
+  uploading: false,
+  fetching: false,
+  status: 'disconnected', // disconnected | connecting | connected | error
+  statusMsg: '',
+};
+
+// ============ PKCE HELPERS ============
+async function _odSha256(s) {
+  const bytes = new TextEncoder().encode(s);
+  const hash = await crypto.subtle.digest('SHA-256', bytes);
+  return new Uint8Array(hash);
+}
+function _odB64Url(bytes) {
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function _odRandStr(len) {
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => ('0' + (b & 0xff).toString(16)).slice(-2)).join('');
+}
+
+// ============ ONEDRIVE: AUTH ============
+async function odBeginLogin() {
+  // Generate PKCE values
+  const verifier = _odRandStr(64);
+  const challenge = _odB64Url(await _odSha256(verifier));
+  sessionStorage.setItem('od_pkce_verifier', verifier);
+
+  const state = _odRandStr(16);
+  sessionStorage.setItem('od_oauth_state', state);
+
+  const params = new URLSearchParams({
+    client_id: OD_CLIENT_ID,
+    response_type: 'code',
+    redirect_uri: OD_REDIRECT,
+    scope: OD_SCOPES,
+    state: state,
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+    prompt: 'select_account',
+  });
+
+  // Redirect to Microsoft login
+  location.href = `${OD_AUTHORITY}/oauth2/v2.0/authorize?${params}`;
+}
+
+async function odHandleAuthCallback() {
+  // Called on every page load to check if we're returning from auth redirect
+  const url = new URL(location.href);
+  const code = url.searchParams.get('code');
+  const state = url.searchParams.get('state');
+  const err = url.searchParams.get('error');
+
+  if (err) {
+    const desc = url.searchParams.get('error_description') || err;
+    odSetStatus('error', 'Lỗi đăng nhập: ' + decodeURIComponent(desc));
+    history.replaceState({}, '', OD_REDIRECT);
+    return;
+  }
+  if (!code) return;
+
+  // Verify state matches
+  const expectedState = sessionStorage.getItem('od_oauth_state');
+  if (state !== expectedState) {
+    odSetStatus('error', 'State mismatch — đăng nhập lại');
+    history.replaceState({}, '', OD_REDIRECT);
+    return;
+  }
+  const verifier = sessionStorage.getItem('od_pkce_verifier');
+  sessionStorage.removeItem('od_oauth_state');
+  sessionStorage.removeItem('od_pkce_verifier');
+
+  // Clean URL right away to avoid re-trigger on refresh
+  history.replaceState({}, '', OD_REDIRECT);
+
+  // Exchange code for tokens
+  odSetStatus('connecting', 'Đang lấy token...');
+  try {
+    const body = new URLSearchParams({
+      client_id: OD_CLIENT_ID,
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: OD_REDIRECT,
+      code_verifier: verifier,
+    });
+    const res = await fetch(`${OD_AUTHORITY}/oauth2/v2.0/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+    });
+    const tok = await res.json();
+    if (tok.error) throw new Error(tok.error_description || tok.error);
+    odSaveTokens(tok);
+    await odLoadAccountInfo();
+    odSetStatus('connected', 'Đã kết nối OneDrive');
+    odStartSync();
+  } catch (e) {
+    odSetStatus('error', 'Lỗi: ' + e.message);
+  }
+}
+
+function odSaveTokens(tok) {
+  OD.accessToken = tok.access_token;
+  OD.refreshToken = tok.refresh_token || OD.refreshToken;
+  OD.expiresAt = Date.now() + (tok.expires_in - 60) * 1000;  // refresh 60s before expiry
+  localStorage.setItem('od_tokens', JSON.stringify({
+    access: OD.accessToken,
+    refresh: OD.refreshToken,
+    expiresAt: OD.expiresAt,
+  }));
+}
+function odLoadStoredTokens() {
+  try {
+    const raw = localStorage.getItem('od_tokens');
+    if (!raw) return false;
+    const t = JSON.parse(raw);
+    OD.accessToken = t.access;
+    OD.refreshToken = t.refresh;
+    OD.expiresAt = t.expiresAt || 0;
+    const accRaw = localStorage.getItem('od_account');
+    if (accRaw) OD.account = JSON.parse(accRaw);
+    return !!OD.refreshToken;
+  } catch { return false; }
+}
+async function odRefreshAccessToken() {
+  if (!OD.refreshToken) throw new Error('No refresh token');
+  const body = new URLSearchParams({
+    client_id: OD_CLIENT_ID,
+    grant_type: 'refresh_token',
+    refresh_token: OD.refreshToken,
+    scope: OD_SCOPES,
+  });
+  const res = await fetch(`${OD_AUTHORITY}/oauth2/v2.0/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+  const tok = await res.json();
+  if (tok.error) throw new Error(tok.error_description || tok.error);
+  odSaveTokens(tok);
+  return OD.accessToken;
+}
+async function odEnsureToken() {
+  if (OD.accessToken && Date.now() < OD.expiresAt) return OD.accessToken;
+  return await odRefreshAccessToken();
+}
+
+async function odLoadAccountInfo() {
+  try {
+    const tk = await odEnsureToken();
+    const r = await fetch('https://graph.microsoft.com/v1.0/me', {
+      headers: { Authorization: 'Bearer ' + tk }
+    });
+    const u = await r.json();
+    OD.account = { name: u.displayName, username: u.userPrincipalName || u.mail };
+    localStorage.setItem('od_account', JSON.stringify(OD.account));
+  } catch {}
+}
+
+function odLogout() {
+  OD.accessToken = null; OD.refreshToken = null; OD.expiresAt = 0;
+  OD.account = null; OD.remoteEtag = null;
+  localStorage.removeItem('od_tokens');
+  localStorage.removeItem('od_account');
+  if (OD.fetchTimer) { clearInterval(OD.fetchTimer); OD.fetchTimer = null; }
+  if (OD.uploadTimer) { clearTimeout(OD.uploadTimer); OD.uploadTimer = null; }
+  odSetStatus('disconnected', 'Đã đăng xuất OneDrive');
+}
+
+// ============ ONEDRIVE: GRAPH API ============
+function _odGraphPath() {
+  // Encode path segments individually so spaces/Unicode work
+  const segs = OD_FILE_PATH.split('/').map(encodeURIComponent).join('/');
+  return `https://graph.microsoft.com/v1.0/me/drive/root:/${segs}`;
+}
+
+async function odDownload() {
+  if (OD.fetching) return null;
+  OD.fetching = true;
+  try {
+    const tk = await odEnsureToken();
+    // Get file metadata + etag first
+    const metaRes = await fetch(_odGraphPath(), {
+      headers: { Authorization: 'Bearer ' + tk }
+    });
+    if (metaRes.status === 404) {
+      // File doesn't exist yet — that's OK, we'll upload first save
+      return { exists: false };
+    }
+    if (!metaRes.ok) throw new Error('Lỗi metadata: ' + metaRes.status);
+    const meta = await metaRes.json();
+    const etag = meta.eTag || meta['@microsoft.graph.downloadUrl'];
+
+    // Get content
+    const dl = meta['@microsoft.graph.downloadUrl'];
+    const cRes = await fetch(dl);
+    if (!cRes.ok) throw new Error('Lỗi tải nội dung: ' + cRes.status);
+    const text = await cRes.text();
+    const json = JSON.parse(text);
+    return { exists: true, json, etag, lastModified: meta.lastModifiedDateTime };
+  } finally {
+    OD.fetching = false;
+  }
+}
+
+async function odUpload(jsonText) {
+  if (OD.uploading) return false;
+  OD.uploading = true;
+  try {
+    const tk = await odEnsureToken();
+    const res = await fetch(_odGraphPath() + ':/content', {
+      method: 'PUT',
+      headers: {
+        Authorization: 'Bearer ' + tk,
+        'Content-Type': 'application/json',
+      },
+      body: jsonText,
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error('Upload thất bại: ' + res.status + ' ' + errText.slice(0, 100));
+    }
+    const meta = await res.json();
+    OD.remoteEtag = meta.eTag;
+    return true;
+  } finally {
+    OD.uploading = false;
+  }
+}
+
+// ============ ONEDRIVE: SYNC ORCHESTRATION ============
+function odSetStatus(status, msg) {
+  OD.status = status;
+  OD.statusMsg = msg || '';
+  updateOdIndicator();
+}
+
+function odIsBusyForUI() {
+  // Don't apply remote changes if user is mid-edit (modal open)
+  return _navStack && _navStack.length > 0;
+}
+
+async function odPullOnce(silent) {
+  if (OD.status !== 'connected') return;
+  try {
+    const r = await odDownload();
+    if (!r) return;
+    if (!r.exists) {
+      // Remote doesn't have file yet → upload local
+      if (data.tasks.length > 0 || data.personalTasks.length > 0) {
+        odSchedulePush();
+      }
+      return;
+    }
+    if (OD.remoteEtag && r.etag === OD.remoteEtag) return; // No change
+    // Don't apply if user is editing — wait until they're free
+    if (odIsBusyForUI()) return;
+
+    // Compare remote vs local — if remote newer (different etag), apply
+    OD.remoteEtag = r.etag;
+    Object.assign(data, r.json);
+    saveLocal();
+    markExported();
+    updateMeta();
+    render();
+    if (!silent) toast('☁️ Đã tải dữ liệu mới từ OneDrive');
+  } catch (e) {
+    odSetStatus('error', 'Lỗi tải: ' + e.message);
+  }
+}
+
+function odSchedulePush() {
+  if (OD.status !== 'connected') return;
+  if (OD.uploadTimer) clearTimeout(OD.uploadTimer);
+  OD.uploadTimer = setTimeout(odPushNow, OD_UPLOAD_DEBOUNCE_MS);
+}
+
+async function odPushNow() {
+  if (OD.status !== 'connected') return;
+  if (OD.uploadTimer) { clearTimeout(OD.uploadTimer); OD.uploadTimer = null; }
+  try {
+    data.savedAt = new Date().toISOString();
+    const json = JSON.stringify(data, null, 2);
+    const ok = await odUpload(json);
+    if (ok) {
+      markExported();
+      updateOdIndicator();
+    }
+  } catch (e) {
+    odSetStatus('error', 'Lỗi upload: ' + e.message);
+  }
+}
+
+function odStartSync() {
+  if (OD.fetchTimer) clearInterval(OD.fetchTimer);
+  // Initial pull on connect
+  odPullOnce();
+  OD.fetchTimer = setInterval(() => odPullOnce(true), OD_FETCH_INTERVAL_MS);
+}
+
+// (saveLocal hook is inlined directly into saveLocal above)
+
+// ============ ONEDRIVE: UI INDICATOR ============
+function updateOdIndicator() {
+  const el = document.getElementById('odIndicator');
+  if (!el) return;
+  const cfg = {
+    disconnected: { icon: '☁️', label: 'Kết nối OneDrive', cls: '' },
+    connecting:   { icon: '⏳', label: 'Đang kết nối...', cls: 'od-ind--busy' },
+    connected:    { icon: '✓', label: OD.account?.name || 'Đã kết nối', cls: 'od-ind--ok' },
+    error:        { icon: '⚠', label: OD.statusMsg || 'Lỗi', cls: 'od-ind--err' },
+  };
+  const c = cfg[OD.status] || cfg.disconnected;
+  el.innerHTML = `<span class="od-ind__icon">${c.icon}</span><span class="od-ind__label">${escapeHtml(c.label)}</span>`;
+  el.className = 'od-ind ' + c.cls;
+  el.onclick = odIndicatorClick;
+}
+function odIndicatorClick() {
+  if (OD.status === 'connected') {
+    if (confirm('Đăng xuất OneDrive?')) odLogout();
+  } else if (OD.status === 'error') {
+    if (confirm('Có lỗi: ' + OD.statusMsg + '\n\nThử đăng nhập lại?')) odBeginLogin();
+  } else {
+    odBeginLogin();
+  }
+}
+
+let data = {
+  version: 2,
+  tasks: [],
+  personalTasks: [],
+  trackingIssues: [],
+  personalNotes: [],
+  inboxItems: [],
+  goals: [],
+  weeklyReviews: [],
+  habits: [],
+  reviews: {},
+  skipReviews: {}
+};
+
+let currentTab = 'tasks';
+let filters = {
+  tasks: 'todo',     // all | todo | doing | done
+  personal: 'todo',  // all | todo | done | star
+  tracking: 'active' // all | active | done
+};
+
+// Advanced filters for the tasks tab
+let advFilters = {
+  duan: '',     // selected dự án (empty = all)
+  nguoi: '',    // selected nhân viên
+  thang: '',    // selected tháng
+};
+// Sort for tasks tab
+let taskSort = {
+  field: 'thoihan',  // thoihan | ketthuc | dukien | trangthai | nguoi | duan | none
+  dir: 'asc'         // asc | desc
+};
+let editing = null;
+let lastFileName = '';
+
+// ============ STORAGE ============
+// Track when data was last saved to localStorage (auto-save) and last exported to file
+let lastSavedAt = null;     // Date — last localStorage write
+let lastExportedAt = null;  // Date — last file export by user (kept across reloads)
+
+function saveLocal() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    if (lastFileName) localStorage.setItem(STORAGE_KEY + '_filename', lastFileName);
+    lastSavedAt = new Date();
+    localStorage.setItem(STORAGE_KEY + '_savedAt', lastSavedAt.toISOString());
+    updateSaveIndicator();
+    // OneDrive auto-sync: schedule debounced push if connected
+    if (typeof OD !== 'undefined' && OD.status === 'connected') {
+      odSchedulePush();
+    }
+  } catch(e) {
+    console.error('saveLocal failed', e);
+  }
+}
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d) {
+        data = Object.assign(data, d);
+        lastFileName = localStorage.getItem(STORAGE_KEY + '_filename') || '';
+        const sa = localStorage.getItem(STORAGE_KEY + '_savedAt');
+        if (sa) lastSavedAt = new Date(sa);
+        const ea = localStorage.getItem(STORAGE_KEY + '_exportedAt');
+        if (ea) lastExportedAt = new Date(ea);
+        return true;
+      }
+    }
+  } catch(e) {}
+  return false;
+}
+
+function markExported() {
+  lastExportedAt = new Date();
+  localStorage.setItem(STORAGE_KEY + '_exportedAt', lastExportedAt.toISOString());
+  updateSaveIndicator();
+}
+
+function isUnexported() {
+  if (!lastSavedAt) return false;
+  if (!lastExportedAt) return data.tasks.length > 0;
+  return lastSavedAt > lastExportedAt;
+}
+
+function updateSaveIndicator() {
+  const el = document.getElementById('saveIndicator');
+  if (!el) return;
+  if (!lastSavedAt) {
+    el.textContent = '';
+    el.className = 'save-ind';
+    return;
+  }
+  const time = lastSavedAt.toTimeString().slice(0, 5);
+  if (isUnexported()) {
+    el.innerHTML = `<span class="save-ind__dot save-ind__dot--warn"></span>Đã lưu ${time} · <span class="save-ind__warn">chưa xuất file</span>`;
+    el.className = 'save-ind save-ind--warn';
+  } else {
+    el.innerHTML = `<span class="save-ind__dot save-ind__dot--ok"></span>Đã lưu ${time}`;
+    el.className = 'save-ind';
+  }
+}
+
+// ============ NORMALIZATION ============
+function normalizeTask(t) {
+  if (!t || typeof t !== 'object') return t;
+  if (t.stt !== undefined && t.stt !== null) t.stt = String(t.stt);
+  return t;
+}
+
+// ============ UTILITIES ============
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function parseTaskDate(str) {
+  if (!str) return null;
+  const m = String(str).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  const d = new Date(str);
+  return isNaN(d) ? null : d;
+}
+function fmtDate(d) {
+  if (!d) return '';
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
+function daysUntil(dateStr) {
+  const d = parseTaskDate(dateStr);
+  if (!d) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  d.setHours(0,0,0,0);
+  return Math.round((d - today) / 86400000);
+}
+function dueLabel(dateStr) {
+  const d = daysUntil(dateStr);
+  if (d === null) return '';
+  if (d < 0)  return `<span class="pill pill--overdue">⚠ Quá hạn ${Math.abs(d)} ngày</span>`;
+  if (d === 0) return `<span class="pill pill--today">📅 Hôm nay</span>`;
+  if (d === 1) return `<span class="pill pill--soon">📅 Mai</span>`;
+  if (d <= 3)  return `<span class="pill pill--soon">📅 ${d} ngày</span>`;
+  return `<span class="pill pill--soon">📅 ${dateStr}</span>`;
+}
+
+// Convert dd/mm/yyyy → yyyy-mm-dd (for native <input type="date">)
+function toIsoDate(s) {
+  if (!s) return '';
+  const m = String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  // already iso?
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  return '';
+}
+// Convert yyyy-mm-dd → dd/mm/yyyy (the format the rest of the app uses)
+function fromIsoDate(s) {
+  if (!s) return '';
+  const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+  return s;
+}
+
+// Render a smart date picker field with quick buttons + native picker
+// inputId: id of the hidden text input that stores dd/mm/yyyy
+function datePickerField(label, inputId, currentValue) {
+  const v = escapeHtml(currentValue || '');
+  return `
+    <div class="field">
+      <label class="field__label">${label}</label>
+      <div class="datepick">
+        <input type="text" class="datepick__display field__input" id="${inputId}" value="${v}" placeholder="dd/mm/yyyy" inputmode="numeric">
+        <button type="button" class="datepick__btn" onclick="openNativeDate('${inputId}')" title="Mở lịch">📅</button>
+        <button type="button" class="datepick__btn datepick__btn--clear" onclick="setDateField('${inputId}', '')" title="Xóa">✕</button>
+      </div>
+      <div class="datepick__quick">
+        <button type="button" class="quick-chip" onclick="setDateOffset('${inputId}', 0)">Hôm nay</button>
+        <button type="button" class="quick-chip" onclick="setDateOffset('${inputId}', 1)">Mai</button>
+        <button type="button" class="quick-chip" onclick="setDateOffset('${inputId}', 3)">+3 ngày</button>
+        <button type="button" class="quick-chip" onclick="setDateOffset('${inputId}', 7)">+1 tuần</button>
+        <button type="button" class="quick-chip" onclick="setDateOffset('${inputId}', 14)">+2 tuần</button>
+        <button type="button" class="quick-chip" onclick="setEndOfMonth('${inputId}')">Cuối tháng</button>
+      </div>
+    </div>`;
+}
+
+// Open native HTML5 date picker (creates a temp <input type="date"> behind the scenes)
+function openNativeDate(inputId) {
+  const target = document.getElementById(inputId);
+  if (!target) return;
+  // Create temporary date input
+  let temp = document.getElementById(inputId + '__tmp');
+  if (!temp) {
+    temp = document.createElement('input');
+    temp.type = 'date';
+    temp.id = inputId + '__tmp';
+    temp.style.position = 'absolute';
+    temp.style.opacity = '0';
+    temp.style.pointerEvents = 'none';
+    temp.style.left = '0';
+    temp.style.top = '0';
+    target.parentElement.appendChild(temp);
+    temp.addEventListener('change', () => {
+      target.value = fromIsoDate(temp.value);
+    });
+  }
+  temp.value = toIsoDate(target.value) || '';
+  // Trigger picker
+  if (typeof temp.showPicker === 'function') {
+    try { temp.showPicker(); return; } catch(e) {}
+  }
+  temp.focus();
+  temp.click();
+}
+
+function setDateField(inputId, value) {
+  const el = document.getElementById(inputId);
+  if (el) el.value = value;
+}
+
+function setDateOffset(inputId, daysFromToday) {
+  const d = new Date();
+  d.setDate(d.getDate() + daysFromToday);
+  setDateField(inputId, fmtDate(d));
+}
+
+function setEndOfMonth(inputId) {
+  const d = new Date();
+  // Last day of current month
+  const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+  setDateField(inputId, fmtDate(last));
+}
+
+// ============ FILE I/O ============
+function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const json = JSON.parse(e.target.result);
+      data.tasks = Array.isArray(json.tasks) ? json.tasks.map(normalizeTask) : [];
+      data.personalTasks = Array.isArray(json.personalTasks) ? json.personalTasks.map(normalizeTask) : [];
+      data.trackingIssues = Array.isArray(json.trackingIssues) ? json.trackingIssues : [];
+      data.personalNotes = Array.isArray(json.personalNotes) ? json.personalNotes : [];
+      data.inboxItems = Array.isArray(json.inboxItems) ? json.inboxItems : [];
+      data.goals = Array.isArray(json.goals) ? json.goals : [];
+      data.weeklyReviews = Array.isArray(json.weeklyReviews) ? json.weeklyReviews : [];
+      data.habits = Array.isArray(json.habits) ? json.habits : [];
+      data.reviews = json.reviews || {};
+      data.skipReviews = json.skipReviews || {};
+      data.version = json.version || 2;
+      lastFileName = file.name;
+      // Auto-select current month if it exists in data
+      autoSelectCurrentMonth();
+      saveLocal();
+      // Loaded data == file data, so we're "in sync" with the file
+      markExported();
+      updateMeta();
+      render();
+      toast(`✓ ${data.tasks.length} CV · ${data.personalTasks.length} cá nhân · ${data.trackingIssues.length} theo dõi`);
+    } catch(err) {
+      toast('Lỗi đọc file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Auto-select current month filter if data contains a matching "Tháng N" entry
+function autoSelectCurrentMonth() {
+  const now = new Date();
+  const m = now.getMonth() + 1; // 1-12
+  // Look for various common formats: "Tháng 5", "tháng 5", "T5", "05", "5"
+  const candidates = [`Tháng ${m}`, `tháng ${m}`, `T${m}`, String(m).padStart(2, '0'), String(m)];
+  const availableMonths = [...new Set(data.tasks.map(t => t.thang).filter(Boolean))];
+  for (const c of candidates) {
+    if (availableMonths.includes(c)) {
+      advFilters.thang = c;
+      return;
+    }
+  }
+  // No exact match: try case-insensitive partial match (e.g. data has "Tháng 5/2026")
+  const lcSubstring = `tháng ${m}`;
+  const partial = availableMonths.find(am => String(am).toLowerCase().includes(lcSubstring));
+  if (partial) advFilters.thang = partial;
+}
+
+function exportJson() {
+  data.savedAt = new Date().toISOString();
+  data.tasks = data.tasks.map(normalizeTask);
+  data.personalTasks = data.personalTasks.map(normalizeTask);
+  saveLocal();
+
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = lastFileName || 'QLTKCK_data.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  markExported();
+  toast('✓ Đã xuất file. Upload lên OneDrive để đồng bộ.');
+}
+
+function updateMeta() {
+  const total = data.tasks.length + data.personalTasks.length + data.trackingIssues.length;
+  document.getElementById('fileMeta').textContent =
+    lastFileName ? `${lastFileName} · ${total} mục` : 'Chưa có file dữ liệu — bấm 📂 để mở';
+  document.getElementById('fileDot').classList.toggle('empty', !lastFileName);
+  // Update tab counts
+  document.getElementById('cnt-tasks').textContent = data.tasks.length;
+  document.getElementById('cnt-personal').textContent = data.personalTasks.length;
+  document.getElementById('cnt-tracking').textContent = data.trackingIssues.length;
+}
+
+// ============ TABS ============
+const TAB_ORDER = ['tasks', 'personal', 'tracking'];
+
+function switchTab(name, animateDirection) {
+  if (!TAB_ORDER.includes(name) || name === currentTab) return;
+  const oldTab = currentTab;
+  currentTab = name;
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === name));
+  const sb = document.getElementById('searchBox'); if (sb) sb.value = '';
+  // Optional slide animation when triggered by swipe
+  if (animateDirection) {
+    const content = document.getElementById('content');
+    if (content) {
+      content.classList.remove('slide-in-left', 'slide-in-right');
+      // Force reflow so re-adding the class triggers animation
+      void content.offsetWidth;
+      content.classList.add(animateDirection === 'left' ? 'slide-in-left' : 'slide-in-right');
+    }
+  }
+  render();
+}
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.onclick = () => switchTab(t.dataset.tab);
+});
+
+// ============ SWIPE GESTURE TO SWITCH TABS ============
+(function setupSwipe() {
+  const content = document.getElementById('content');
+  if (!content) return;
+  let startX = 0, startY = 0, startT = 0, tracking = false;
+
+  // Listen on the main content area only — avoid interfering with edge-swipe (back gesture)
+  content.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) { tracking = false; return; }
+    // Don't start tracking if a modal is currently open
+    if (_navStack && _navStack.length > 0) { tracking = false; return; }
+    const t = e.touches[0];
+    // Avoid the edge zones (left 24px / right 24px) where Android's back gesture lives
+    const w = window.innerWidth || document.documentElement.clientWidth;
+    if (t.clientX < 24 || t.clientX > w - 24) { tracking = false; return; }
+    startX = t.clientX;
+    startY = t.clientY;
+    startT = Date.now();
+    tracking = true;
+  }, { passive: true });
+
+  content.addEventListener('touchend', (e) => {
+    if (!tracking) return;
+    tracking = false;
+    const t = (e.changedTouches && e.changedTouches[0]) || null;
+    if (!t) return;
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+    const dt = Date.now() - startT;
+    // Require: predominantly horizontal, > 60px, faster than 800ms, vertical drift < 60px
+    if (Math.abs(dx) < 60) return;
+    if (Math.abs(dy) > 60) return;
+    if (Math.abs(dx) < Math.abs(dy) * 1.4) return;
+    if (dt > 800) return;
+    const idx = TAB_ORDER.indexOf(currentTab);
+    if (dx < 0 && idx < TAB_ORDER.length - 1) {
+      // Swipe left → next tab
+      switchTab(TAB_ORDER[idx + 1], 'left');
+    } else if (dx > 0 && idx > 0) {
+      // Swipe right → previous tab
+      switchTab(TAB_ORDER[idx - 1], 'right');
+    }
+  }, { passive: true });
+})();
+
+// ============ FILTERS ============
+function getFilterDefs() {
+  if (currentTab === 'tasks') {
+    const todo = data.tasks.filter(t => t.trangthai === 'Chưa làm' || !t.trangthai).length;
+    const doing = data.tasks.filter(t => t.trangthai === 'Đang làm').length;
+    const done = data.tasks.filter(t => t.trangthai === 'Hoàn thành').length;
+    return [
+      { key: 'all',   label: 'Tất cả', count: data.tasks.length },
+      { key: 'todo',  label: '○ Chưa làm', count: todo },
+      { key: 'doing', label: '▶ Đang làm', count: doing },
+      { key: 'done',  label: '✓ Hoàn thành', count: done }
+    ];
+  } else if (currentTab === 'personal') {
+    const todo = data.personalTasks.filter(t => !t.done).length;
+    const done = data.personalTasks.filter(t => t.done).length;
+    const star = data.personalTasks.filter(t => t.star && !t.done).length;
+    return [
+      { key: 'all',  label: 'Tất cả', count: data.personalTasks.length },
+      { key: 'todo', label: '○ Chưa xong', count: todo },
+      { key: 'star', label: '★ Quan trọng', count: star },
+      { key: 'done', label: '✓ Đã xong',    count: done }
+    ];
+  } else {
+    const active = data.trackingIssues.filter(t => !t.done).length;
+    const done = data.trackingIssues.filter(t => t.done).length;
+    return [
+      { key: 'all',    label: 'Tất cả', count: data.trackingIssues.length },
+      { key: 'active', label: '👁 Đang theo dõi', count: active },
+      { key: 'done',   label: '✓ Đã xong',       count: done }
+    ];
+  }
+}
+
+function renderFilters() {
+  const defs = getFilterDefs();
+  const cur = filters[currentTab === 'personal' ? 'personal' : currentTab];
+  // ensure current filter still exists
+  const exists = defs.some(d => d.key === cur);
+  if (!exists) {
+    filters[currentTab === 'personal' ? 'personal' : currentTab] = 'all';
+  }
+  const f = filters[currentTab === 'personal' ? 'personal' : currentTab];
+
+  let advHtml = '';
+  // Pinned adv filter button (outside scroll, always visible)
+  if (currentTab === 'tasks') {
+    const hasAct = !!(advFilters.duan || advFilters.nguoi || advFilters.thang) || (taskSort.field !== 'thoihan' || taskSort.dir !== 'asc');
+    advHtml = `<button class="chip chip--adv ${hasAct ? 'has-active' : ''}" onclick="openAdvFilter()">⚙ Lọc${hasAct ? ' •' : ''}</button>`;
+  }
+
+  let chipsHtml = '';
+  defs.forEach(d => {
+    chipsHtml += `<button class="chip ${d.key === f ? 'active' : ''}" onclick="setFilter('${d.key}')">${d.label}<span class="chip__count">${d.count}</span></button>`;
+  });
+
+  document.getElementById('filters').innerHTML =
+    advHtml +
+    `<div class="filters__scroll">${chipsHtml}</div>`;
+  renderActiveFilterStrip();
+}
+
+function renderActiveFilterStrip() {
+  const el = document.getElementById('activeFilters');
+  if (currentTab !== 'tasks') {
+    el.style.display = 'none';
+    return;
+  }
+  const chips = [];
+  if (advFilters.duan)  chips.push({ label: '📁 ' + advFilters.duan,  key: 'duan' });
+  if (advFilters.nguoi) chips.push({ label: '👤 ' + advFilters.nguoi, key: 'nguoi' });
+  if (advFilters.thang) chips.push({ label: '🗓 ' + advFilters.thang, key: 'thang' });
+
+  if (taskSort.field !== 'thoihan' || taskSort.dir !== 'asc') {
+    const fl = sortFieldLabel(taskSort.field);
+    const dirIcon = taskSort.dir === 'asc' ? '↑' : '↓';
+    chips.push({ label: `↕ ${fl} ${dirIcon}`, key: 'sort' });
+  }
+
+  if (chips.length === 0) {
+    el.style.display = 'none';
+    el.innerHTML = '';
+    return;
+  }
+  el.style.display = 'flex';
+  let html = '';
+  chips.forEach(c => {
+    html += `<div class="active-filter-chip">${escapeHtml(c.label)}<span class="active-filter-chip__x" onclick="clearActiveFilter('${c.key}')">✕</span></div>`;
+  });
+  html += `<button class="active-filter-chip__clear" onclick="resetAdvFilters(true)">Xóa tất cả</button>`;
+  el.innerHTML = html;
+}
+
+function sortFieldLabel(field) {
+  const map = {
+    thoihan: 'Thời hạn (deadline)',
+    ketthuc: 'Ngày kết thúc',
+    dukien:  'Ngày dự kiến',
+    trangthai: 'Trạng thái',
+    nguoi:   'Nhân sự',
+    duan:    'Dự án',
+    none:    'Mặc định'
+  };
+  return map[field] || field;
+}
+
+function clearActiveFilter(key) {
+  if (key === 'sort') {
+    taskSort = { field: 'thoihan', dir: 'asc' };
+  } else if (key in advFilters) {
+    advFilters[key] = '';
+  }
+  render();
+}
+
+function setFilter(key) {
+  filters[currentTab === 'personal' ? 'personal' : currentTab] = key;
+  render();
+}
+
+// ============ ADVANCED FILTER UI ============
+function openAdvFilter() {
+  const body = document.getElementById('advFilterBody');
+
+  // Status filter from main chip row (Tất cả / Chưa làm / Đang làm / Hoàn thành)
+  const statusFilter = filters.tasks; // 'all' | 'todo' | 'doing' | 'done'
+  const matchStatus = (t) => {
+    const s = t.trangthai;
+    if (statusFilter === 'all') return true;
+    if (statusFilter === 'todo')  return !s || s === 'Chưa làm';
+    if (statusFilter === 'doing') return s === 'Đang làm';
+    if (statusFilter === 'done')  return s === 'Hoàn thành';
+    return true;
+  };
+
+  // Cross-filtered base list: apply already-selected filters AND status chip
+  // when computing the other fields' available options.
+  // This means: when filtering by Tháng 5 + Chưa làm, only projects with
+  // unfinished tasks in May will appear in the project picker.
+  const matchOther = (t, exclude) => {
+    if (!matchStatus(t)) return false;
+    if (exclude !== 'duan'  && advFilters.duan  && t.duan  !== advFilters.duan)  return false;
+    if (exclude !== 'nguoi' && advFilters.nguoi && t.nguoi !== advFilters.nguoi) return false;
+    if (exclude !== 'thang' && advFilters.thang && t.thang !== advFilters.thang) return false;
+    return true;
+  };
+
+  const duans  = [...new Set(data.tasks.filter(t => matchOther(t, 'duan')).map(t => t.duan).filter(Boolean))].sort();
+  const nguois = [...new Set(data.tasks.filter(t => matchOther(t, 'nguoi')).map(t => t.nguoi).filter(Boolean))].sort();
+  const thangs = [...new Set(data.tasks.filter(t => matchOther(t, 'thang')).map(t => t.thang).filter(Boolean))].sort();
+
+  const duanCount  = (v) => data.tasks.filter(t => t.duan  === v && matchOther(t, 'duan')).length;
+  const nguoiCount = (v) => data.tasks.filter(t => t.nguoi === v && matchOther(t, 'nguoi')).length;
+  const thangCount = (v) => data.tasks.filter(t => t.thang === v && matchOther(t, 'thang')).length;
+  const totalCount = data.tasks.filter(t => matchOther(t, null)).length;
+
+  let html = '';
+
+  // SORT
+  html += `<div class="adv-section">
+    <div class="adv-section__title">↕ Sắp xếp theo</div>
+    <div class="sort-row">
+      <select class="sort-select" id="advSortField">
+        <option value="thoihan"   ${taskSort.field==='thoihan'?'selected':''}>📅 Thời hạn (deadline)</option>
+        <option value="ketthuc"   ${taskSort.field==='ketthuc'?'selected':''}>✓ Ngày kết thúc</option>
+        <option value="dukien"    ${taskSort.field==='dukien'?'selected':''}>🎯 Ngày dự kiến</option>
+        <option value="trangthai" ${taskSort.field==='trangthai'?'selected':''}>● Trạng thái</option>
+        <option value="nguoi"     ${taskSort.field==='nguoi'?'selected':''}>👤 Nhân sự</option>
+        <option value="duan"      ${taskSort.field==='duan'?'selected':''}>📁 Dự án</option>
+        <option value="none"      ${taskSort.field==='none'?'selected':''}>— Theo thứ tự gốc</option>
+      </select>
+      <button class="sort-dir" id="advSortDir" onclick="toggleSortDir()">${taskSort.dir==='asc'?'↑':'↓'}</button>
+    </div>
+  </div>`;
+
+  // Helper: render a filter section. When a filter is active, only show "Tất cả" + selected value.
+  // Add a search input when list is long (>8 items)
+  function renderFilterSection(title, field, list, countFn, totalLabel) {
+    let h = `<div class="adv-section"><div class="adv-section__title">${title}</div>`;
+
+    if (advFilters[field]) {
+      // Selected: show only "Tất cả" (clear) + selected value
+      h += `<div class="adv-options">`;
+      h += `<button class="adv-opt" onclick="clearAdvField('${field}')">⨯ Tất cả${totalLabel?' <span class=\"adv-opt__count\">'+totalLabel+'</span>':''}</button>`;
+      const v = advFilters[field];
+      h += `<button class="adv-opt active" onclick="clearAdvField('${field}')">${escapeHtml(v)} <span class="adv-opt__count">${countFn(v)}</span></button>`;
+      h += `</div>`;
+    } else {
+      // Not selected: show full list with optional search box
+      const useSearch = list.length > 8;
+      if (useSearch) {
+        h += `<input type="search" class="adv-search" id="advSearch_${field}" placeholder="Tìm trong ${title.replace(/^[^\s]+\s/, '')}…">`;
+      }
+      h += `<div class="adv-options" id="advOptions_${field}">`;
+      h += `<button class="adv-opt active" onclick="clearAdvField('${field}')">Tất cả${totalLabel?' <span class=\"adv-opt__count\">'+totalLabel+'</span>':''}</button>`;
+      list.forEach(v => {
+        // Use data-* attributes (escaped via escapeHtml) instead of inline onclick with JSON.stringify
+        // because Vietnamese text with quotes would break the onclick attribute
+        h += `<button class="adv-opt adv-opt--selectable" data-field="${field}" data-value="${escapeHtml(v)}" data-search="${escapeHtml(v).toLowerCase()}">${escapeHtml(v)} <span class="adv-opt__count">${countFn(v)}</span></button>`;
+      });
+      if (list.length === 0) h += `<div style="color:var(--ink-3);font-size:13px;padding:4px 0;">Không có dữ liệu phù hợp</div>`;
+      h += `</div>`;
+    }
+    h += `</div>`;
+    return h;
+  }
+
+  html += renderFilterSection('📁 Dự án',     'duan',  duans,  duanCount,  totalCount);
+  html += renderFilterSection('👤 Nhân viên', 'nguoi', nguois, nguoiCount, '');
+  html += renderFilterSection('🗓 Tháng',     'thang', thangs, thangCount, '');
+
+  body.innerHTML = html;
+  const modalEl = document.getElementById('advFilterModal');
+  const wasOpen = modalEl.classList.contains('show');
+  modalEl.classList.add('show');
+  // Only push nav state on first open (not on re-render after clearAdvField)
+  if (!wasOpen) _pushNav('advFilter', () => {
+    modalEl.classList.remove('show');
+  });
+
+  // Bind sort field
+  document.getElementById('advSortField').onchange = function() {
+    taskSort.field = this.value;
+    render();
+  };
+
+  // Event delegation: handle clicks on selectable filter options
+  // (using data-* attrs to avoid quote-escaping issues with Vietnamese text)
+  body.addEventListener('click', function(e) {
+    const btn = e.target.closest('.adv-opt--selectable');
+    if (!btn) return;
+    const field = btn.getAttribute('data-field');
+    const value = btn.getAttribute('data-value');
+    if (field && value !== null) {
+      // Decode HTML entities (since data-value was escaped with escapeHtml)
+      const tmp = document.createElement('textarea');
+      tmp.innerHTML = value;
+      setAdv(field, tmp.value);
+    }
+  });
+
+  // Bind search inputs (filter options as user types)
+  ['duan', 'nguoi', 'thang'].forEach(field => {
+    const inp = document.getElementById('advSearch_' + field);
+    if (!inp) return;
+    inp.addEventListener('input', () => {
+      const q = inp.value.trim().toLowerCase();
+      const container = document.getElementById('advOptions_' + field);
+      if (!container) return;
+      container.querySelectorAll('.adv-opt[data-search]').forEach(btn => {
+        const val = btn.getAttribute('data-search') || '';
+        btn.style.display = (!q || val.includes(q)) ? '' : 'none';
+      });
+    });
+  });
+}
+
+function toggleSortDir() {
+  taskSort.dir = (taskSort.dir === 'asc' ? 'desc' : 'asc');
+  document.getElementById('advSortDir').textContent = taskSort.dir === 'asc' ? '↑' : '↓';
+  render();
+}
+
+function setAdv(field, value) {
+  advFilters[field] = value;
+  // Close modal immediately for fast feedback — user sees result right away
+  closeAdvFilter();
+  render();
+}
+
+// For when user wants to keep modal open (used by "Tất cả" button to clear single filter)
+function clearAdvField(field) {
+  advFilters[field] = '';
+  openAdvFilter();
+  render();
+}
+
+function resetAdvFilters(closeModal) {
+  advFilters = { duan: '', nguoi: '', thang: '' };
+  taskSort = { field: 'thoihan', dir: 'asc' };
+  if (closeModal) {
+    closeAdvFilter();
+  } else if (document.getElementById('advFilterModal').classList.contains('show')) {
+    openAdvFilter();
+  }
+  render();
+}
+
+function closeAdvFilter() {
+  const el = document.getElementById('advFilterModal');
+  if (el.classList.contains('show')) {
+    el.classList.remove('show');
+    _popNav();
+  }
+}
+
+// ============ RENDER ============
+function matchSearch(text, q) {
+  if (!q) return true;
+  return String(text || '').toLowerCase().includes(q);
+}
+
+function priorityClass(t) {
+  if (t.trangthai === 'Hoàn thành' || t.done) return 'task--done';
+  const dpt = Number(t.dpt);
+  if (t.priority === 'urgent' || t.priority === 'high' || dpt === 1) return 'task--urgent';
+  if (t.priority === 'low' || dpt >= 3) return 'task--low';
+  return 'task--normal';
+}
+
+function statusPill(s) {
+  if (s === 'Hoàn thành') return '<span class="pill pill--done">✓ Hoàn thành</span>';
+  if (s === 'Đang làm')   return '<span class="pill pill--doing">▶ Đang làm</span>';
+  return '<span class="pill pill--todo">○ Chưa làm</span>';
+}
+
+function priorityPill(p) {
+  const map = {
+    urgent: '<span class="pill pill--overdue">🔴 Gấp</span>',
+    high:   '<span class="pill pill--overdue">🔴 Gấp</span>',
+    normal: '<span class="pill pill--today">🟡 Bình thường</span>',
+    medium: '<span class="pill pill--today">🟡 Bình thường</span>',
+    low:    '<span class="pill pill--done">🟢 Không gấp</span>'
+  };
+  return map[p] || '';
+}
+
+function render() {
+  renderFilters();
+  const root = document.getElementById('content');
+  const search = document.getElementById('searchBox').value.toLowerCase().trim();
+  if (currentTab === 'tasks') renderTasks(root, search);
+  else if (currentTab === 'personal') renderPersonal(root, search);
+  else renderTracking(root, search);
+}
+
+// ===== TASKS =====
+function renderTasks(root, q) {
+  const f = filters.tasks;
+  let list = data.tasks.slice();
+  if (f === 'todo')  list = list.filter(t => t.trangthai === 'Chưa làm' || !t.trangthai);
+  else if (f === 'doing') list = list.filter(t => t.trangthai === 'Đang làm');
+  else if (f === 'done')  list = list.filter(t => t.trangthai === 'Hoàn thành');
+
+  // Advanced filters: dự án, nhân viên, tháng
+  if (advFilters.duan)  list = list.filter(t => t.duan === advFilters.duan);
+  if (advFilters.nguoi) list = list.filter(t => t.nguoi === advFilters.nguoi);
+  if (advFilters.thang) list = list.filter(t => t.thang === advFilters.thang);
+
+  if (q) {
+    list = list.filter(t =>
+      matchSearch(t.congviec, q) ||
+      matchSearch(t.duan, q) ||
+      matchSearch(t.nguoi, q) ||
+      matchSearch(t.congdoan, q));
+  }
+
+  // Apply sort
+  applyTaskSort(list);
+
+  if (list.length === 0) {
+    root.innerHTML = emptyHtml('📋', 'Không có công việc nào', q ? 'Không tìm thấy kết quả phù hợp' : (data.tasks.length === 0 ? 'Mở file JSON để bắt đầu' : 'Thử bộ lọc khác'));
+    return;
+  }
+
+  // Determine grouping: skip grouping when sorted by something specific
+  const groupBy = (taskSort.field === 'duan' || taskSort.field === 'thoihan' || taskSort.field === 'none') ? 'duan' :
+                  (taskSort.field === 'nguoi') ? 'nguoi' :
+                  (taskSort.field === 'trangthai') ? 'trangthai' :
+                  null;
+
+  let html = '';
+
+  if (groupBy) {
+    // Group by chosen field, preserving sorted order within each group
+    const groups = new Map(); // preserve insertion order
+    const groupLabel = {
+      duan: '(Không có dự án)',
+      nguoi: '(Chưa giao)',
+      trangthai: '(Không trạng thái)'
+    };
+    list.forEach(t => {
+      const k = t[groupBy] || groupLabel[groupBy];
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k).push(t);
+    });
+    groups.forEach((items, g) => {
+      const icon = groupBy === 'duan' ? '📁 ' : groupBy === 'nguoi' ? '👤 ' : '● ';
+      html += `<div class="group">
+        <div class="group__header">
+          ${icon}${escapeHtml(g)}
+          <span class="group__count">${items.length}</span>
+        </div>`;
+
+      // When grouping by NGUOI: sub-group items by DUAN inside each person
+      if (groupBy === 'nguoi') {
+        const subGroups = new Map();
+        items.forEach(t => {
+          const k = t.duan || '(Không có dự án)';
+          if (!subGroups.has(k)) subGroups.set(k, []);
+          subGroups.get(k).push(t);
+        });
+        // Sort sub-groups alphabetically by project name for consistency
+        const sortedKeys = [...subGroups.keys()].sort((a, b) => a.localeCompare(b, 'vi'));
+        sortedKeys.forEach(k => {
+          const subItems = subGroups.get(k);
+          html += `<div class="subgroup">
+            <div class="subgroup__header">📁 ${escapeHtml(k)} <span class="subgroup__count">${subItems.length}</span></div>`;
+          subItems.forEach(t => { html += renderTaskCard(t); });
+          html += `</div>`;
+        });
+      } else {
+        items.forEach(t => { html += renderTaskCard(t); });
+      }
+      html += '</div>';
+    });
+  } else {
+    // Flat list (no grouping when sorting by date fields)
+    list.forEach(t => { html += renderTaskCard(t); });
+  }
+
+  root.innerHTML = html;
+}
+
+function renderTaskCard(t) {
+  const idx = data.tasks.indexOf(t);
+  // Build dates row for easier comparison: deadline → expected → finished
+  const dates = renderTaskDates(t);
+  return `<div class="task ${priorityClass(t)}">
+    <div class="task__top">
+      <div class="task__title">${escapeHtml(t.congviec || '(Không tiêu đề)')}</div>
+    </div>
+    <div class="task__meta">
+      ${statusPill(t.trangthai)}
+      ${t.duan ? `<span class="meta-item"><span class="meta-item__icon">📁</span>${escapeHtml(t.duan)}</span>` : ''}
+      ${t.congdoan ? `<span class="meta-item"><span class="meta-item__icon">📌</span>${escapeHtml(t.congdoan)}</span>` : ''}
+      ${t.nguoi ? `<span class="meta-item"><span class="meta-item__icon">👤</span>${escapeHtml(t.nguoi)}</span>` : ''}
+      ${t.phanloai ? `<span class="meta-item"><span class="meta-item__icon">🏷</span>${escapeHtml(t.phanloai)}</span>` : ''}
+    </div>
+    ${t.ghichu ? `<div class="task__sub">${escapeHtml(t.ghichu)}</div>` : ''}
+    ${dates ? `<div class="task__dates">${dates}</div>` : ''}
+    <div class="task__actions">
+      <button class="action-btn action-btn--ghost" onclick="openEditor({kind:'tasks',index:${idx}})">📝 Chi tiết</button>
+      ${t.trangthai !== 'Hoàn thành' ? `<button class="action-btn action-btn--success" onclick="markDoneTask(${idx})">✓ Xong</button>` : `<button class="action-btn action-btn--warn" onclick="reopenTask(${idx})">↺ Mở lại</button>`}
+    </div>
+  </div>`;
+}
+
+// Render date comparison row: Hạn → Dự kiến → Xong
+function renderTaskDates(t) {
+  const has = t.thoihan || t.dukien || t.ketthuc;
+  if (!has) return '';
+
+  // Determine status flags for visual cues
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dlDate = parseTaskDate(t.thoihan);
+  const isOverdue = dlDate && dlDate < today && t.trangthai !== 'Hoàn thành';
+  const isDoneEarly = t.ketthuc && dlDate && parseTaskDate(t.ketthuc) <= dlDate;
+  const isDoneLate  = t.ketthuc && dlDate && parseTaskDate(t.ketthuc)  > dlDate;
+
+  const cell = (label, val, cls) =>
+    val ? `<span class="date-cell ${cls||''}">
+      <span class="date-cell__label">${label}</span>
+      <span class="date-cell__val">${escapeHtml(formatShortDate(val))}</span>
+    </span>` : `<span class="date-cell date-cell--empty">
+      <span class="date-cell__label">${label}</span>
+      <span class="date-cell__val">—</span>
+    </span>`;
+
+  return cell('📅 Hạn',     t.thoihan, isOverdue ? 'date-cell--overdue' : '') +
+         cell('🎯 Dự kiến', t.dukien,  '') +
+         cell('✓ Xong',     t.ketthuc, isDoneLate ? 'date-cell--late' : isDoneEarly ? 'date-cell--ontime' : '');
+}
+
+// Format date short: try to keep DD/MM if input is DD/MM/YYYY, else return as-is
+function formatShortDate(s) {
+  if (!s) return '';
+  // Match DD/MM/YYYY or D/M/YYYY → DD/MM
+  const m = String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return `${m[1].padStart(2,'0')}/${m[2].padStart(2,'0')}`;
+  return s;
+}
+
+// ===== SORT =====
+function applyTaskSort(list) {
+  const field = taskSort.field;
+  const dirMul = taskSort.dir === 'asc' ? 1 : -1;
+  if (field === 'none') return;
+
+  // status order
+  const statusRank = (s) => {
+    if (s === 'Đang làm') return 0;
+    if (s === 'Chưa làm' || !s) return 1;
+    if (s === 'Hoàn thành') return 2;
+    return 3;
+  };
+
+  list.sort((a, b) => {
+    let cmp = 0;
+    if (field === 'thoihan' || field === 'ketthuc' || field === 'dukien') {
+      const da = parseTaskDate(a[field]);
+      const db = parseTaskDate(b[field]);
+      // null dates always go to end (regardless of dir)
+      if (!da && !db) cmp = 0;
+      else if (!da) return 1;
+      else if (!db) return -1;
+      else cmp = da - db;
+    } else if (field === 'trangthai') {
+      cmp = statusRank(a.trangthai) - statusRank(b.trangthai);
+    } else if (field === 'nguoi') {
+      cmp = String(a.nguoi || '').localeCompare(String(b.nguoi || ''), 'vi');
+    } else if (field === 'duan') {
+      cmp = String(a.duan || '').localeCompare(String(b.duan || ''), 'vi');
+    }
+    return cmp * dirMul;
+  });
+}
+
+// ===== PERSONAL =====
+function renderPersonal(root, q) {
+  const f = filters.personal;
+  let list = data.personalTasks.slice();
+  if (f === 'todo') list = list.filter(t => !t.done);
+  else if (f === 'done') list = list.filter(t => t.done);
+  else if (f === 'star') list = list.filter(t => t.star && !t.done);
+
+  if (q) {
+    list = list.filter(t =>
+      matchSearch(t.title, q) ||
+      matchSearch(t.note, q) ||
+      matchSearch(t.purpose, q));
+  }
+
+  // Sort: star first, then by due date
+  list.sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    if (!!a.star !== !!b.star) return a.star ? -1 : 1;
+    const da = daysUntil(a.due), db = daysUntil(b.due);
+    if (da === null && db === null) return 0;
+    if (da === null) return 1;
+    if (db === null) return -1;
+    return da - db;
+  });
+
+  if (list.length === 0) {
+    root.innerHTML = emptyHtml('✏️', 'Chưa có task cá nhân', q ? 'Không tìm thấy kết quả' : 'Bấm + để thêm');
+    return;
+  }
+
+  let html = '';
+  list.forEach(t => {
+    const idx = data.personalTasks.indexOf(t);
+    let cls = priorityClass(t);
+    if (t.star && !t.done) cls += ' task--star';
+    const subs = Array.isArray(t.subs) ? t.subs : [];
+    const subsDone = subs.filter(s => s.done).length;
+
+    html += `<div class="task ${cls}">
+      <div class="task__top">
+        <div class="task__title">${escapeHtml(t.title || '(Không tiêu đề)')}</div>
+        ${t.star ? '<div class="task__star">★</div>' : ''}
+      </div>
+      <div class="task__meta">
+        ${priorityPill(t.priority)}
+        ${t.due ? dueLabel(t.due) : ''}
+        ${t.purpose ? `<span class="meta-item"><span class="meta-item__icon">🎯</span>${escapeHtml(t.purpose)}</span>` : ''}
+        ${subs.length ? `<span class="meta-item"><span class="meta-item__icon">📋</span>${subsDone}/${subs.length}</span>` : ''}
+      </div>
+      ${t.note ? `<div class="task__sub">${escapeHtml(t.note)}</div>` : ''}
+      ${subs.length ? renderSubs(t.id, subs) : ''}
+      <div class="task__actions">
+        <button class="action-btn action-btn--ghost" onclick="openEditor({kind:'personalTasks',index:${idx}})">📝 Sửa</button>
+        <button class="action-btn ${t.done ? 'action-btn--warn' : 'action-btn--success'}" onclick="togglePersonalDone(${idx})">${t.done ? '↺ Mở lại' : '✓ Xong'}</button>
+      </div>
+    </div>`;
+  });
+  root.innerHTML = html;
+}
+
+function renderSubs(taskId, subs) {
+  let html = '<div class="task__subs">';
+  subs.forEach(s => {
+    html += `<div class="subitem ${s.done ? 'subitem--done' : ''}">
+      <div class="subitem__check" onclick="toggleSubtask('${taskId}','${s.id}')">${s.done ? '✓' : ''}</div>
+      <div class="subitem__text">${escapeHtml(s.text)}</div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function toggleSubtask(taskId, subId) {
+  const t = data.personalTasks.find(x => String(x.id) === String(taskId));
+  if (!t || !t.subs) return;
+  const s = t.subs.find(x => String(x.id) === String(subId));
+  if (!s) return;
+  s.done = !s.done;
+  saveLocal();
+  render();
+}
+
+// ===== TRACKING =====
+function renderTracking(root, q) {
+  const f = filters.tracking;
+  let list = data.trackingIssues.slice();
+  if (f === 'active') list = list.filter(t => !t.done);
+  else if (f === 'done') list = list.filter(t => t.done);
+
+  if (q) {
+    list = list.filter(t =>
+      matchSearch(t.content, q) ||
+      matchSearch(t.note, q) ||
+      matchSearch(t.target, q));
+  }
+
+  // Sort: not done first, then by remindDate
+  list.sort((a, b) => {
+    if (!!a.done !== !!b.done) return a.done ? 1 : -1;
+    const da = daysUntil(a.remindDate), db = daysUntil(b.remindDate);
+    if (da === null && db === null) return 0;
+    if (da === null) return 1;
+    if (db === null) return -1;
+    return da - db;
+  });
+
+  if (list.length === 0) {
+    root.innerHTML = emptyHtml('👁', 'Không có mục theo dõi', q ? 'Không tìm thấy kết quả' : 'Bấm + để thêm');
+    return;
+  }
+
+  let html = '';
+  list.forEach(t => {
+    const idx = data.trackingIssues.indexOf(t);
+    let cls = t.done ? 'task--done' : (t.priority === 'high' ? 'task--urgent' : t.priority === 'low' ? 'task--low' : 'task--normal');
+    html += `<div class="task ${cls}">
+      <div class="task__title">${escapeHtml(t.content || '(Không nội dung)')}</div>
+      <div class="task__meta">
+        ${priorityPill(t.priority || 'medium')}
+        ${t.remindDate ? dueLabel(t.remindDate) : ''}
+        ${t.target ? `<span class="meta-item"><span class="meta-item__icon">🎯</span>${escapeHtml(t.target)}</span>` : ''}
+      </div>
+      ${t.purpose ? `<div class="task__sub"><b>Mục đích:</b> ${escapeHtml(t.purpose)}</div>` : ''}
+      ${t.note ? `<div class="task__sub">${escapeHtml(t.note)}</div>` : ''}
+      <div class="task__actions">
+        <button class="action-btn action-btn--ghost" onclick="openEditor({kind:'trackingIssues',index:${idx}})">📝 Sửa</button>
+        <button class="action-btn ${t.done ? 'action-btn--warn' : 'action-btn--success'}" onclick="toggleTrackingDone(${idx})">${t.done ? '↺ Mở lại' : '✓ Xong'}</button>
+      </div>
+    </div>`;
+  });
+  root.innerHTML = html;
+}
+
+function emptyHtml(icon, title, hint) {
+  return `<div class="empty">
+    <div class="empty__icon">${icon}</div>
+    <div class="empty__title">${escapeHtml(title)}</div>
+    <div class="empty__hint">${escapeHtml(hint || '')}</div>
+  </div>`;
+}
+
+// ============ ACTIONS ============
+function markDoneTask(idx) {
+  data.tasks[idx].trangthai = 'Hoàn thành';
+  if (!data.tasks[idx].ketthuc) data.tasks[idx].ketthuc = fmtDate(new Date());
+  saveLocal(); render(); toast('✓ Đã hoàn thành');
+}
+function reopenTask(idx) {
+  data.tasks[idx].trangthai = 'Đang làm';
+  saveLocal(); render(); toast('↺ Đã mở lại');
+}
+function togglePersonalDone(idx) {
+  data.personalTasks[idx].done = !data.personalTasks[idx].done;
+  saveLocal(); render();
+}
+function toggleTrackingDone(idx) {
+  data.trackingIssues[idx].done = !data.trackingIssues[idx].done;
+  saveLocal(); render();
+}
+
+function deleteCurrent() {
+  if (!editing) return;
+  if (!confirm('Xóa mục này?')) return;
+  data[editing.kind].splice(editing.index, 1);
+  saveLocal();
+  closeEditor();
+  render();
+  toast('🗑 Đã xóa');
+}
+
+// ============ EDITOR ============
+function openEditor(target) {
+  editing = target;
+  const kind = target ? target.kind : (currentTab === 'tasks' ? 'tasks' : currentTab === 'personal' ? 'personalTasks' : 'trackingIssues');
+  if (target) editing.kind = kind;
+  const item = target ? data[kind][target.index] : null;
+  document.getElementById('editorTitle').textContent = (item ? '✏ Sửa ' : '＋ Thêm ') + tabLabel(kind);
+  document.getElementById('deleteBtn').style.display = item ? 'inline-flex' : 'none';
+
+  let html = '';
+  if (kind === 'tasks') {
+    html = `
+      <div class="field">
+        <label class="field__label">Công việc *</label>
+        <input class="field__input" id="ed-congviec" value="${escapeHtml(item?.congviec)}">
+      </div>
+      <div class="field">
+        <label class="field__label">Dự án</label>
+        <input class="field__input" id="ed-duan" value="${escapeHtml(item?.duan)}">
+      </div>
+      <div class="field__row">
+        <div class="field">
+          <label class="field__label">Công đoạn</label>
+          <input class="field__input" id="ed-congdoan" value="${escapeHtml(item?.congdoan)}">
+        </div>
+        <div class="field">
+          <label class="field__label">Người</label>
+          <input class="field__input" id="ed-nguoi" value="${escapeHtml(item?.nguoi)}">
+        </div>
+      </div>
+      <div class="field__row">
+        <div class="field">
+          <label class="field__label">Tháng</label>
+          <input class="field__input" id="ed-thang" value="${escapeHtml(item?.thang)}">
+        </div>
+        <div class="field">
+          <label class="field__label">STT</label>
+          <input class="field__input" id="ed-stt" value="${escapeHtml(item?.stt)}">
+        </div>
+      </div>
+      <div class="field__row">
+        <div class="field">
+          <label class="field__label">Mã dự án</label>
+          <input class="field__input" id="ed-maduan" value="${escapeHtml(item?.maduan)}">
+        </div>
+        <div class="field">
+          <label class="field__label">Phân loại</label>
+          <input class="field__input" id="ed-phanloai" value="${escapeHtml(item?.phanloai)}">
+        </div>
+      </div>
+      <div class="field__row">
+        ${datePickerField('Thời hạn', 'ed-thoihan', item?.thoihan)}
+        ${datePickerField('Ngày dự kiến', 'ed-dukien', item?.dukien)}
+      </div>
+      ${datePickerField('Ngày kết thúc', 'ed-ketthuc', item?.ketthuc)}
+      <div class="field">
+        <label class="field__label">Trạng thái</label>
+        <select class="field__select" id="ed-trangthai">
+          <option value="Chưa làm" ${(item?.trangthai==='Chưa làm'||!item?.trangthai)?'selected':''}>○ Chưa làm</option>
+          <option value="Đang làm" ${item?.trangthai==='Đang làm'?'selected':''}>▶ Đang làm</option>
+          <option value="Hoàn thành" ${item?.trangthai==='Hoàn thành'?'selected':''}>✓ Hoàn thành</option>
+        </select>
+      </div>
+      <div class="field__row">
+        <div class="field">
+          <label class="field__label">Độ phức tạp</label>
+          <input class="field__input" id="ed-dpt" type="number" value="${item?.dpt ?? ''}">
+        </div>
+        <div class="field">
+          <label class="field__label">Giờ KH</label>
+          <input class="field__input" id="ed-gkh" type="number" step="0.1" value="${item?.gkh ?? ''}">
+        </div>
+        <div class="field">
+          <label class="field__label">Giờ TT</label>
+          <input class="field__input" id="ed-gtt" type="number" step="0.1" value="${item?.gtt ?? ''}">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field__label">Chất lượng</label>
+        <input class="field__input" id="ed-chatluong" value="${escapeHtml(item?.chatluong)}">
+      </div>
+      <div class="field">
+        <label class="field__label">Ghi chú</label>
+        <textarea class="field__textarea" id="ed-ghichu">${escapeHtml(item?.ghichu)}</textarea>
+      </div>
+    `;
+  } else if (kind === 'personalTasks') {
+    html = `
+      <div class="field">
+        <label class="field__label">Tiêu đề *</label>
+        <input class="field__input" id="ed-title" value="${escapeHtml(item?.title)}">
+      </div>
+      <div class="field">
+        <label class="field__label">Mục đích</label>
+        <input class="field__input" id="ed-purpose" value="${escapeHtml(item?.purpose)}">
+      </div>
+      <div class="field">
+        <label class="field__label">Độ ưu tiên</label>
+        <div class="priority-pills">
+          <input type="radio" name="ed-pri" id="pri-u" value="urgent" ${item?.priority==='urgent'?'checked':''}><label class="p-urgent" for="pri-u">🔴 Gấp</label>
+          <input type="radio" name="ed-pri" id="pri-n" value="normal" ${(!item || item?.priority==='normal' || !item?.priority)?'checked':''}><label class="p-normal" for="pri-n">🟡 BT</label>
+          <input type="radio" name="ed-pri" id="pri-l" value="low" ${item?.priority==='low'?'checked':''}><label class="p-low" for="pri-l">🟢 Nhẹ</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field__label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <input type="checkbox" id="ed-star" ${item?.star ? 'checked' : ''} style="width: 18px; height: 18px;">
+          <span>★ Đánh dấu quan trọng</span>
+        </label>
+      </div>
+      ${datePickerField('Hạn', 'ed-due', item?.due)}
+      <div class="field">
+        <label class="field__label">Ghi chú</label>
+        <textarea class="field__textarea" id="ed-note">${escapeHtml(item?.note)}</textarea>
+      </div>
+    `;
+  } else if (kind === 'trackingIssues') {
+    html = `
+      <div class="field">
+        <label class="field__label">Nội dung *</label>
+        <textarea class="field__textarea" id="ed-content">${escapeHtml(item?.content)}</textarea>
+      </div>
+      <div class="field">
+        <label class="field__label">Mục tiêu/Đối tượng</label>
+        <input class="field__input" id="ed-target" value="${escapeHtml(item?.target)}">
+      </div>
+      <div class="field">
+        <label class="field__label">Mục đích</label>
+        <input class="field__input" id="ed-purpose" value="${escapeHtml(item?.purpose)}">
+      </div>
+      <div class="field">
+        <label class="field__label">Độ ưu tiên</label>
+        <div class="priority-pills">
+          <input type="radio" name="ed-pri" id="trpri-u" value="high" ${item?.priority==='high'?'checked':''}><label class="p-urgent" for="trpri-u">🔴 Gấp</label>
+          <input type="radio" name="ed-pri" id="trpri-n" value="medium" ${(!item || item?.priority==='medium' || !item?.priority)?'checked':''}><label class="p-normal" for="trpri-n">🟡 BT</label>
+          <input type="radio" name="ed-pri" id="trpri-l" value="low" ${item?.priority==='low'?'checked':''}><label class="p-low" for="trpri-l">🟢 Nhẹ</label>
+        </div>
+      </div>
+      ${datePickerField('Ngày nhắc', 'ed-remindDate', item?.remindDate)}
+      <div class="field">
+        <label class="field__label">Ghi chú</label>
+        <textarea class="field__textarea" id="ed-note">${escapeHtml(item?.note)}</textarea>
+      </div>
+    `;
+  }
+  document.getElementById('editorFields').innerHTML = html;
+  const editorEl = document.getElementById('editorModal');
+  const wasOpen = editorEl.classList.contains('show');
+  editorEl.classList.add('show');
+  if (!wasOpen) _pushNav('editor', () => {
+    editorEl.classList.remove('show');
+    editing = null;
+  });
+}
+
+function tabLabel(kind) {
+  return kind === 'tasks' ? 'công việc' : kind === 'personalTasks' ? 'task cá nhân' : 'mục theo dõi';
+}
+
+function closeEditor() {
+  const el = document.getElementById('editorModal');
+  if (el.classList.contains('show')) {
+    el.classList.remove('show');
+    editing = null;
+    _popNav();
+  } else {
+    editing = null;
+  }
+}
+
+function val(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function numVal(id) { const v = val(id); return v === '' ? '' : Number(v); }
+
+function saveEditor() {
+  const kind = editing ? editing.kind : (currentTab === 'tasks' ? 'tasks' : currentTab === 'personal' ? 'personalTasks' : 'trackingIssues');
+  const target = editing;
+  let item;
+
+  if (kind === 'tasks') {
+    if (!val('ed-congviec')) return toast('Nhập tên công việc');
+    const orig = target ? data.tasks[target.index] : {};
+    item = {
+      ...orig,
+      congviec: val('ed-congviec'),
+      duan: val('ed-duan'),
+      congdoan: val('ed-congdoan'),
+      nguoi: val('ed-nguoi'),
+      phanloai: val('ed-phanloai'),
+      thang: val('ed-thang'),
+      maduan: val('ed-maduan'),
+      stt: String(val('ed-stt')),
+      thoihan: val('ed-thoihan'),
+      dukien: val('ed-dukien'),
+      ketthuc: val('ed-ketthuc'),
+      trangthai: val('ed-trangthai') || 'Chưa làm',
+      chatluong: val('ed-chatluong'),
+      dpt: numVal('ed-dpt'),
+      gkh: numVal('ed-gkh'),
+      gtt: numVal('ed-gtt'),
+      ghichu: val('ed-ghichu')
+    };
+    item = normalizeTask(item);
+  } else if (kind === 'personalTasks') {
+    if (!val('ed-title')) return toast('Nhập tiêu đề');
+    const pri = document.querySelector('input[name="ed-pri"]:checked')?.value || 'normal';
+    const orig = target ? data.personalTasks[target.index] : {};
+    item = {
+      ...orig,
+      id: orig.id || Date.now(),
+      title: val('ed-title'),
+      purpose: val('ed-purpose'),
+      priority: pri,
+      due: val('ed-due'),
+      note: val('ed-note'),
+      star: document.getElementById('ed-star').checked,
+      done: orig.done || false,
+      subs: orig.subs || [],
+      createdAt: orig.createdAt || new Date().toISOString()
+    };
+  } else if (kind === 'trackingIssues') {
+    if (!val('ed-content')) return toast('Nhập nội dung');
+    const pri = document.querySelector('input[name="ed-pri"]:checked')?.value || 'medium';
+    const orig = target ? data.trackingIssues[target.index] : {};
+    item = {
+      ...orig,
+      id: orig.id || String(Date.now()),
+      content: val('ed-content'),
+      target: val('ed-target'),
+      purpose: val('ed-purpose'),
+      priority: pri,
+      remindDate: val('ed-remindDate'),
+      note: val('ed-note'),
+      done: orig.done || false,
+      createdAt: orig.createdAt || new Date().toISOString()
+    };
+  }
+
+  if (target) data[kind][target.index] = item;
+  else data[kind].push(item);
+  saveLocal();
+  closeEditor();
+  render();
+  updateMeta();
+  toast(target ? '✓ Đã cập nhật' : '✓ Đã thêm');
+}
+
+// ============ TOAST ============
+let _toastT;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastT);
+  _toastT = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+// ============ HELP / INSTALL ============
+function showHelp() {
+  alert(`📖 HƯỚNG DẪN SỬ DỤNG
+
+1️⃣ Mở file JSON: bấm 📂 → chọn QLTKCK_data.json đã tải từ OneDrive.
+
+2️⃣ Sửa task ở 3 tab: CV / Cá nhân / Theo dõi.
+
+3️⃣ Lọc bằng các chip (Chưa làm / Đang làm / Đã xong...) hoặc bấm ⚙ Lọc & Sắp xếp ở tab CV để lọc theo dự án/nhân viên/tháng.
+
+4️⃣ Xuất file: bấm 💾 → file mới tải về điện thoại.
+
+5️⃣ Upload file đó lên OneDrive (đè file cũ) — desktop sẽ tự đồng bộ.
+
+📲 Thêm vào màn hình chính: bấm icon 📲 vàng trên header.
+
+💾 Dữ liệu tự lưu trong trình duyệt giữa các lần dùng.`);
+}
+
+// Detect how page was opened
+function detectPageContext() {
+  const url = location.href;
+  return {
+    isFile: url.startsWith('file:') || url.startsWith('content:'),
+    isHttp: url.startsWith('http:') || url.startsWith('https:'),
+    isStandalone: window.matchMedia && window.matchMedia('(display-mode: standalone)').matches,
+    canPrompt: !!_deferredPrompt
+  };
+}
+
+function showAddToHome() {
+  const ctx = detectPageContext();
+  const body = document.getElementById('homeGuideBody');
+  const action = document.getElementById('homeGuideAction');
+
+  if (ctx.isStandalone) {
+    body.innerHTML = `
+      <div class="guide-note">
+        ✓ Bạn đang chạy app ở chế độ standalone (đã cài) — không cần làm gì thêm!
+      </div>`;
+    action.style.display = 'none';
+    document.getElementById('homeGuideModal').classList.add('show');
+    return;
+  }
+
+  action.style.display = 'inline-flex';
+
+  if (ctx.canPrompt) {
+    // Native install available — best case
+    body.innerHTML = `
+      <div class="guide-note">
+        ✨ Trình duyệt hỗ trợ cài trực tiếp! Bấm <b>Cài đặt ngay</b> bên dưới.
+      </div>
+      <div class="guide-step" style="margin-top: 14px;">
+        <div class="guide-step__num">!</div>
+        <div class="guide-step__body">
+          Sau khi cài, app sẽ xuất hiện trên màn hình chính như app gốc, không có thanh URL.
+        </div>
+      </div>`;
+    action.textContent = '📲 Cài đặt ngay';
+    action.onclick = nativeInstall;
+  } else if (ctx.isFile) {
+    // File:// or content:// — Chrome blocks PWA install. Need workaround.
+    body.innerHTML = `
+      <div class="guide-warn">
+        ⚠ Bạn đang mở file từ điện thoại. Chrome <b>không cho cài PWA từ file local</b>.<br>Cần dùng 1 trong các cách dưới đây.
+      </div>
+
+      <div class="guide-section-title">🥇 Cách 1: Tạo shortcut bằng Files (đơn giản nhất)</div>
+      <div class="guide-step">
+        <div class="guide-step__num">1</div>
+        <div class="guide-step__body">Mở app <b>Files by Google</b> → vào thư mục <b>Download</b></div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step__num">2</div>
+        <div class="guide-step__body">Nhấn giữ file <b>qltkck-mobile-v3.html</b></div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step__num">3</div>
+        <div class="guide-step__body">Chọn <b>"Thêm vào màn hình chính"</b> hoặc <b>"Tạo lối tắt"</b> (nếu có)</div>
+      </div>
+
+      <div class="guide-section-title">🥈 Cách 2: Mở qua URL https (cài chuẩn PWA)</div>
+      <div class="guide-step">
+        <div class="guide-step__num">1</div>
+        <div class="guide-step__body">Upload file HTML lên <b>OneDrive</b> hoặc <b>Google Drive</b>, đặt chế độ <b>"Anyone with link"</b></div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step__num">2</div>
+        <div class="guide-step__body">Mở link đó trong Chrome → menu ⋮ → <b>"Cài đặt ứng dụng"</b></div>
+      </div>
+      <div class="guide-note">
+        ℹ Lưu ý: file được host phải kết thúc bằng <code>.html</code>, không phải link xem tài liệu của OneDrive.
+      </div>
+
+      <div class="guide-section-title">🥉 Cách 3: Bookmark + ghim shortcut</div>
+      <div class="guide-step">
+        <div class="guide-step__num">1</div>
+        <div class="guide-step__body">Bấm icon <b>☆</b> ở thanh URL Chrome để bookmark trang này</div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step__num">2</div>
+        <div class="guide-step__body">Trang chủ Chrome → <b>Dấu trang</b> → tìm bookmark → nhấn giữ → <b>"Thêm vào Màn hình chính"</b></div>
+      </div>`;
+    action.textContent = '📋 Sao chép đường dẫn file';
+    action.onclick = copyFileUrl;
+  } else if (ctx.isHttp) {
+    // Generic HTTP — install should work via menu
+    body.innerHTML = `
+      <div class="guide-section-title">📲 Trên Chrome (Pixel)</div>
+      <div class="guide-step">
+        <div class="guide-step__num">1</div>
+        <div class="guide-step__body">Bấm menu <b>⋮</b> ở góc trên bên phải</div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step__num">2</div>
+        <div class="guide-step__body">Chọn <b>"Cài đặt ứng dụng"</b> hoặc <b>"Thêm vào Màn hình chính"</b></div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step__num">3</div>
+        <div class="guide-step__body">Xác nhận <b>Cài đặt</b> — icon Q vàng sẽ xuất hiện ngay trên màn hình chính</div>
+      </div>
+
+      <div class="guide-section-title">🍎 Trên Safari (iOS)</div>
+      <div class="guide-step">
+        <div class="guide-step__num">1</div>
+        <div class="guide-step__body">Bấm icon <b>Share ⬆</b> ở dưới</div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step__num">2</div>
+        <div class="guide-step__body">Chọn <b>"Thêm vào Màn hình chính"</b></div>
+      </div>`;
+    action.textContent = 'Đã hiểu';
+    action.onclick = closeHomeGuide;
+  }
+
+  document.getElementById('homeGuideModal').classList.add('show');
+}
+
+async function nativeInstall() {
+  if (!_deferredPrompt) {
+    toast('Trình duyệt chưa sẵn sàng — thử cách thủ công');
+    return;
+  }
+  _deferredPrompt.prompt();
+  const { outcome } = await _deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    toast('🎉 Đã thêm vào màn hình chính!');
+    closeHomeGuide();
+  }
+  _deferredPrompt = null;
+}
+
+async function copyFileUrl() {
+  const url = location.href;
+  try {
+    await navigator.clipboard.writeText(url);
+    toast('✓ Đã sao chép đường dẫn');
+  } catch(e) {
+    // Fallback: show URL in alert for manual copy
+    prompt('Sao chép đường dẫn này:', url);
+  }
+}
+
+function closeHomeGuide() {
+  document.getElementById('homeGuideModal').classList.remove('show');
+}
+
+// PWA install prompt (native)
+let _deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  _deferredPrompt = e;
+  // Show install hint after a moment, only once
+  setTimeout(() => {
+    if (!localStorage.getItem(STORAGE_KEY + '_install_dismissed')) {
+      document.getElementById('installHint').classList.add('show');
+    }
+  }, 3000);
+});
+
+document.getElementById('installBtn').onclick = async () => {
+  document.getElementById('installHint').classList.remove('show');
+  if (_deferredPrompt) {
+    nativeInstall();
+  } else {
+    showAddToHome();
+  }
+};
+
+function dismissInstallHint() {
+  document.getElementById('installHint').classList.remove('show');
+  localStorage.setItem(STORAGE_KEY + '_install_dismissed', '1');
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installHint').classList.remove('show');
+  toast('🎉 Đã cài thành công!');
+});
+
+// Show install banner for file:// users too (since they need manual setup)
+setTimeout(() => {
+  const ctx = detectPageContext();
+  if (ctx.isFile && !ctx.isStandalone &&
+      !localStorage.getItem(STORAGE_KEY + '_install_dismissed')) {
+    const hint = document.getElementById('installHint');
+    hint.querySelector('.install-hint__text').innerHTML =
+      'Bấm <b>Hướng dẫn</b> để thêm app vào màn hình chính.';
+    hint.querySelector('#installBtn').textContent = 'Hướng dẫn';
+    hint.classList.add('show');
+  }
+}, 2500);
+
+// ============ BACK-GESTURE / HISTORY MANAGEMENT ============
+// Use History API to capture Android back-gesture: instead of exiting the app,
+// each open modal pushes a state. Back gesture = popstate = close the top modal.
+const _navStack = []; // stack of { close: fn, name: string }
+
+function _pushNav(name, closeFn) {
+  // Push a sentinel state so the system back gesture has something to pop
+  history.pushState({ qltkckNav: name }, '');
+  _navStack.push({ name, close: closeFn });
+}
+
+function _popNav() {
+  // Called when user closes via UI (× button) — sync history with stack
+  if (_navStack.length > 0) {
+    _navStack.pop();
+    // Go back in history without triggering our own close (we already closed it)
+    _suppressNextPopstate = true;
+    history.back();
+  }
+}
+
+let _suppressNextPopstate = false;
+let _lastBackAt = 0;
+
+// Push an initial sentinel so the very first back gesture lands here, not on exit.
+// We re-push every time after consuming so there's always a "buffer" entry.
+function _ensureExitBuffer() {
+  history.pushState({ qltkckExitBuffer: true }, '');
+}
+_ensureExitBuffer();
+
+window.addEventListener('popstate', function(e) {
+  if (_suppressNextPopstate) {
+    _suppressNextPopstate = false;
+    return;
+  }
+  // System back gesture triggered.
+  // Case 1: A modal is open — close the top one
+  if (_navStack.length > 0) {
+    const top = _navStack.pop();
+    try { top.close(); } catch(err) {}
+    return;
+  }
+  // Case 2: No modal — require double-back to actually exit
+  const now = Date.now();
+  if (now - _lastBackAt < 2000) {
+    // Second back within 2s — let the navigation happen (will exit app)
+    // Don't push another buffer; allow history to actually go back
+    return;
+  }
+  // First back: show toast and re-push buffer so this back is "consumed"
+  _lastBackAt = now;
+  toast('Trượt lại lần nữa để thoát');
+  _ensureExitBuffer();
+});
+
+// ============ INIT ============
+loadLocal();
+// Auto-select current month if not already filtered by month
+if (!advFilters.thang && data.tasks && data.tasks.length > 0) {
+  autoSelectCurrentMonth();
+}
+updateMeta();
+updateSaveIndicator();
+render();
+
+// Refresh save indicator every 30s so the "Đã lưu HH:MM" stays accurate-ish
+setInterval(updateSaveIndicator, 30000);
+
+// ============ ONEDRIVE INIT ============
+(async function odInit() {
+  // Show indicator (in disconnected state by default)
+  updateOdIndicator();
+
+  // 1. Handle OAuth redirect callback if we just came back from Microsoft login
+  if (location.search.includes('code=') || location.search.includes('error=')) {
+    await odHandleAuthCallback();
+    return;  // Done — odHandleAuthCallback also calls odStartSync on success
+  }
+
+  // 2. Try to restore stored tokens from previous session
+  if (odLoadStoredTokens()) {
+    odSetStatus('connecting', 'Đang kết nối lại...');
+    try {
+      await odEnsureToken();  // Will refresh if needed
+      if (!OD.account) await odLoadAccountInfo();
+      odSetStatus('connected', 'Đã kết nối OneDrive');
+      odStartSync();
+    } catch (e) {
+      // Refresh failed — need full re-login
+      odSetStatus('disconnected', 'Phiên hết hạn — đăng nhập lại');
+      localStorage.removeItem('od_tokens');
+    }
+  }
+})();
+</script>
+</body>
+</html>
