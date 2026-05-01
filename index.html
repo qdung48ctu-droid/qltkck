@@ -9,12 +9,11 @@
 <meta name="apple-mobile-web-app-title" content="QLTKCK">
 <title>QLTKCK Mobile</title>
 
-<!-- Inline manifest for "Add to Home Screen" -->
-<link rel="manifest" href='data:application/json;charset=utf-8,{"name":"QLTKCK Mobile","short_name":"QLTKCK","start_url":".","display":"standalone","orientation":"portrait","theme_color":"%230f172a","background_color":"%23f1f5f9","description":"Quản lý công việc TKCK","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27%3E%3Crect width=%27512%27 height=%27512%27 rx=%27110%27 fill=%27%230f172a%27/%3E%3Ctext x=%27256%27 y=%27340%27 font-size=%27260%27 text-anchor=%27middle%27 font-family=%27system-ui%27 font-weight=%27800%27 fill=%27%23fbbf24%27%3EQ%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]}'>
-
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230f172a'/%3E%3Ctext x='256' y='340' font-size='260' text-anchor='middle' font-family='system-ui' font-weight='800' fill='%23fbbf24'%3EQ%3C/text%3E%3C/svg%3E">
-
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230f172a'/%3E%3Ctext x='256' y='340' font-size='260' text-anchor='middle' font-family='system-ui' font-weight='800' fill='%23fbbf24'%3EQ%3C/text%3E%3C/svg%3E">
+<!-- PWA manifest & icons -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
 
 <style>
 :root {
@@ -84,9 +83,6 @@ input, textarea, select { border: none; outline: none; background: transparent; 
   background: linear-gradient(180deg, var(--primary) 0%, var(--primary-2) 100%);
   color: #fff;
   padding: calc(var(--safe-top) + 14px) 16px 14px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
   box-shadow: 0 1px 0 rgba(0,0,0,.05);
 }
 .app-header__row {
@@ -147,14 +143,76 @@ input, textarea, select { border: none; outline: none; background: transparent; 
 .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
 .dot.empty { background: var(--ink-3); }
 
+/* Save indicator */
+.save-ind {
+  font-size: 11px;
+  color: rgba(255,255,255,.6);
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.save-ind__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.save-ind__dot--ok   { background: #22c55e; }
+.save-ind__dot--warn { background: var(--accent); animation: pulse-dot 2s ease-in-out infinite; }
+.save-ind__warn { color: var(--accent); font-weight: 600; }
+.save-ind--warn { color: rgba(255,255,255,.85); }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: .55; transform: scale(0.8); }
+}
+
+/* OneDrive sync indicator (clickable button in header) */
+.od-ind {
+  margin-top: 8px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  transition: all .15s;
+}
+.od-ind:active { transform: scale(0.98); background: rgba(255,255,255,.14); }
+.od-ind__icon { font-size: 14px; line-height: 1; }
+.od-ind__label {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.od-ind--ok {
+  background: rgba(34,197,94,.16);
+  border-color: rgba(34,197,94,.35);
+}
+.od-ind--ok .od-ind__icon { color: #4ade80; }
+.od-ind--busy {
+  background: rgba(245,158,11,.16);
+  border-color: rgba(245,158,11,.35);
+}
+.od-ind--err {
+  background: rgba(239,68,68,.16);
+  border-color: rgba(239,68,68,.4);
+  color: #fca5a5;
+}
+
 /* ============ TABS ============ */
 .tabs {
   display: flex;
   background: var(--surface);
   border-bottom: 1px solid var(--line);
-  position: sticky;
-  top: calc(var(--safe-top) + 76px);
-  z-index: 90;
   padding: 6px 6px 0;
   gap: 2px;
 }
@@ -205,19 +263,34 @@ input, textarea, select { border: none; outline: none; background: transparent; 
   background: var(--ink);
 }
 
+/* Sticky bar wraps tabs + filters so they pin together below header */
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgba(15,23,42,.06);
+}
+
 /* ============ FILTERS ============ */
 .filters {
   display: flex;
   gap: 7px;
-  padding: 12px 12px;
+  padding: 10px 12px;
   background: var(--surface);
   border-bottom: 1px solid var(--line);
+  align-items: center;
+}
+.filters__scroll {
+  display: flex;
+  gap: 6px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  flex: 1;
   align-items: center;
 }
-.filters::-webkit-scrollbar { display: none; }
+.filters__scroll::-webkit-scrollbar { display: none; }
 .chip {
   padding: 9px 14px;
   border-radius: 999px;
@@ -250,16 +323,21 @@ input, textarea, select { border: none; outline: none; background: transparent; 
   background: rgba(255,255,255,.20);
 }
 
-/* Advanced filter trigger button */
+/* Advanced filter trigger button — pinned outside scrollable chips */
 .chip--adv {
   background: var(--ink);
   color: #fff;
   border-color: var(--ink);
+  flex-shrink: 0;
+  padding: 9px 16px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(15,23,42,.18);
 }
 .chip--adv.has-active {
   background: var(--accent);
   color: var(--primary);
   border-color: var(--accent);
+  box-shadow: 0 2px 6px rgba(245,158,11,.35);
 }
 
 /* Active filter summary strip */
@@ -318,8 +396,22 @@ input, textarea, select { border: none; outline: none; background: transparent; 
   flex-wrap: wrap;
   gap: 6px;
 }
+.adv-search {
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: 10px;
+  font-size: 13px;
+}
+.adv-search:focus {
+  border-color: var(--ink);
+  background: var(--surface);
+  outline: none;
+}
 .adv-opt {
-  padding: 8px 14px;
+  padding: 10px 14px;
   border-radius: 10px;
   border: 1px solid var(--line);
   background: var(--surface-2);
@@ -330,6 +422,7 @@ input, textarea, select { border: none; outline: none; background: transparent; 
   align-items: center;
   gap: 5px;
   transition: all .15s;
+  min-height: 38px;
 }
 .adv-opt:active { transform: scale(0.97); }
 .adv-opt.active {
@@ -437,7 +530,7 @@ main {
 
 /* ============ GROUP HEADER ============ */
 .group {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   animation: fadeUp .35s ease both;
 }
 @keyframes fadeUp {
@@ -448,21 +541,70 @@ main {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 4px 8px;
-  font-size: 11px;
+  padding: 10px 14px;
+  font-size: 14px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--ink-2);
+  letter-spacing: 0.01em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(15,23,42,.12);
+  border-left: 4px solid var(--accent);
 }
 .group__count {
-  background: var(--line);
-  color: var(--ink-2);
-  padding: 1px 7px;
-  border-radius: 10px;
-  font-size: 10px;
-  font-weight: 700;
+  background: var(--accent);
+  color: var(--primary);
+  padding: 2px 9px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  font-weight: 800;
   letter-spacing: 0;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Sub-group (nested grouping inside a parent group) */
+.subgroup {
+  margin: 8px 0 14px 6px;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
+}
+
+/* Tab swipe slide-in animations */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide-in-left  { animation: slideInLeft  .2s ease-out; }
+.slide-in-right { animation: slideInRight .2s ease-out; }
+.subgroup__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  background: #fef3c7;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent);
+}
+.subgroup__count {
+  background: var(--accent);
+  color: var(--primary);
+  padding: 1px 7px;
+  border-radius: 9px;
+  font-size: 10.5px;
+  font-weight: 800;
+  margin-left: auto;
+  flex-shrink: 0;
+  border: none;
 }
 
 /* ============ TASK CARD ============ */
@@ -547,6 +689,55 @@ main {
   color: var(--ink-2);
   white-space: pre-wrap;
   line-height: 1.5;
+}
+
+/* Date comparison row: deadline → expected → finished */
+.task__dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+}
+.date-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  font-size: 11px;
+  min-width: 0;
+}
+.date-cell__label {
+  color: var(--ink-3);
+  font-weight: 500;
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+.date-cell__val {
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.date-cell--empty .date-cell__val {
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.date-cell--overdue .date-cell__val {
+  color: var(--red);
+}
+.date-cell--overdue .date-cell__label {
+  color: var(--red);
+  font-weight: 700;
+}
+.date-cell--ontime .date-cell__val {
+  color: var(--green);
+}
+.date-cell--late .date-cell__val {
+  color: var(--orange);
 }
 
 .task__subs {
@@ -745,6 +936,58 @@ main {
 .field__row { display: flex; gap: 8px; }
 .field__row > * { flex: 1; }
 
+/* Smart date picker */
+.datepick {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.datepick__display {
+  flex: 1;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.datepick__btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: all .15s;
+}
+.datepick__btn:active { transform: scale(0.94); background: var(--line); }
+.datepick__btn--clear {
+  font-size: 13px;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+.datepick__quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+.quick-chip {
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  transition: all .15s;
+}
+.quick-chip:active {
+  transform: scale(0.96);
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+
 .priority-pills {
   display: flex;
   gap: 6px;
@@ -934,9 +1177,15 @@ input[type="file"] { display: none; }
   <div class="app-header__file">
     <span class="dot empty" id="fileDot"></span>
     <span id="fileMeta">Chưa có file dữ liệu</span>
+    <span class="save-ind" id="saveIndicator"></span>
   </div>
+  <button class="od-ind" id="odIndicator" type="button">
+    <span class="od-ind__icon">☁️</span><span class="od-ind__label">Kết nối OneDrive</span>
+  </button>
   <input type="file" id="fileInput" accept=".json,application/json" onchange="handleFile(this.files[0])">
 </header>
+
+<div class="sticky-bar">
 
 <nav class="tabs" id="tabs">
   <button class="tab active" data-tab="tasks">
@@ -954,6 +1203,8 @@ input[type="file"] { display: none; }
 </nav>
 
 <div class="filters" id="filters"></div>
+
+</div><!-- /.sticky-bar -->
 
 <div class="active-filters" id="activeFilters" style="display:none;"></div>
 
@@ -1034,6 +1285,352 @@ input[type="file"] { display: none; }
 
 const STORAGE_KEY = 'qltkck_pwa_v2';
 
+// ============ ONEDRIVE SYNC CONFIG ============
+const OD_CLIENT_ID = 'b8021097-53e2-4e0f-b339-75281dd09521';
+const OD_REDIRECT  = 'https://qdung48ctu-droid.github.io/qltkck/';
+const OD_AUTHORITY = 'https://login.microsoftonline.com/consumers';  // Personal MS accounts
+const OD_SCOPES    = 'Files.ReadWrite offline_access User.Read';
+const OD_FILE_PATH = 'Ung dung Web/Quan ly TKCK/QLTKCK_data.json';
+const OD_FETCH_INTERVAL_MS = 30000;   // 30 seconds
+const OD_UPLOAD_DEBOUNCE_MS = 3000;   // 3 seconds after last edit
+
+// ============ ONEDRIVE STATE ============
+const OD = {
+  accessToken: null,
+  refreshToken: null,
+  expiresAt: 0,
+  account: null,        // { name, username }
+  remoteEtag: null,     // for conflict detection
+  fetchTimer: null,
+  uploadTimer: null,
+  uploading: false,
+  fetching: false,
+  status: 'disconnected', // disconnected | connecting | connected | error
+  statusMsg: '',
+};
+
+// ============ PKCE HELPERS ============
+async function _odSha256(s) {
+  const bytes = new TextEncoder().encode(s);
+  const hash = await crypto.subtle.digest('SHA-256', bytes);
+  return new Uint8Array(hash);
+}
+function _odB64Url(bytes) {
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function _odRandStr(len) {
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => ('0' + (b & 0xff).toString(16)).slice(-2)).join('');
+}
+
+// ============ ONEDRIVE: AUTH ============
+async function odBeginLogin() {
+  // Generate PKCE values
+  const verifier = _odRandStr(64);
+  const challenge = _odB64Url(await _odSha256(verifier));
+  sessionStorage.setItem('od_pkce_verifier', verifier);
+
+  const state = _odRandStr(16);
+  sessionStorage.setItem('od_oauth_state', state);
+
+  const params = new URLSearchParams({
+    client_id: OD_CLIENT_ID,
+    response_type: 'code',
+    redirect_uri: OD_REDIRECT,
+    scope: OD_SCOPES,
+    state: state,
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+    prompt: 'select_account',
+  });
+
+  // Redirect to Microsoft login
+  location.href = `${OD_AUTHORITY}/oauth2/v2.0/authorize?${params}`;
+}
+
+async function odHandleAuthCallback() {
+  // Called on every page load to check if we're returning from auth redirect
+  const url = new URL(location.href);
+  const code = url.searchParams.get('code');
+  const state = url.searchParams.get('state');
+  const err = url.searchParams.get('error');
+
+  if (err) {
+    const desc = url.searchParams.get('error_description') || err;
+    odSetStatus('error', 'Lỗi đăng nhập: ' + decodeURIComponent(desc));
+    history.replaceState({}, '', OD_REDIRECT);
+    return;
+  }
+  if (!code) return;
+
+  // Verify state matches
+  const expectedState = sessionStorage.getItem('od_oauth_state');
+  if (state !== expectedState) {
+    odSetStatus('error', 'State mismatch — đăng nhập lại');
+    history.replaceState({}, '', OD_REDIRECT);
+    return;
+  }
+  const verifier = sessionStorage.getItem('od_pkce_verifier');
+  sessionStorage.removeItem('od_oauth_state');
+  sessionStorage.removeItem('od_pkce_verifier');
+
+  // Clean URL right away to avoid re-trigger on refresh
+  history.replaceState({}, '', OD_REDIRECT);
+
+  // Exchange code for tokens
+  odSetStatus('connecting', 'Đang lấy token...');
+  try {
+    const body = new URLSearchParams({
+      client_id: OD_CLIENT_ID,
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: OD_REDIRECT,
+      code_verifier: verifier,
+    });
+    const res = await fetch(`${OD_AUTHORITY}/oauth2/v2.0/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+    });
+    const tok = await res.json();
+    if (tok.error) throw new Error(tok.error_description || tok.error);
+    odSaveTokens(tok);
+    await odLoadAccountInfo();
+    odSetStatus('connected', 'Đã kết nối OneDrive');
+    odStartSync();
+  } catch (e) {
+    odSetStatus('error', 'Lỗi: ' + e.message);
+  }
+}
+
+function odSaveTokens(tok) {
+  OD.accessToken = tok.access_token;
+  OD.refreshToken = tok.refresh_token || OD.refreshToken;
+  OD.expiresAt = Date.now() + (tok.expires_in - 60) * 1000;  // refresh 60s before expiry
+  localStorage.setItem('od_tokens', JSON.stringify({
+    access: OD.accessToken,
+    refresh: OD.refreshToken,
+    expiresAt: OD.expiresAt,
+  }));
+}
+function odLoadStoredTokens() {
+  try {
+    const raw = localStorage.getItem('od_tokens');
+    if (!raw) return false;
+    const t = JSON.parse(raw);
+    OD.accessToken = t.access;
+    OD.refreshToken = t.refresh;
+    OD.expiresAt = t.expiresAt || 0;
+    const accRaw = localStorage.getItem('od_account');
+    if (accRaw) OD.account = JSON.parse(accRaw);
+    return !!OD.refreshToken;
+  } catch { return false; }
+}
+async function odRefreshAccessToken() {
+  if (!OD.refreshToken) throw new Error('No refresh token');
+  const body = new URLSearchParams({
+    client_id: OD_CLIENT_ID,
+    grant_type: 'refresh_token',
+    refresh_token: OD.refreshToken,
+    scope: OD_SCOPES,
+  });
+  const res = await fetch(`${OD_AUTHORITY}/oauth2/v2.0/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+  const tok = await res.json();
+  if (tok.error) throw new Error(tok.error_description || tok.error);
+  odSaveTokens(tok);
+  return OD.accessToken;
+}
+async function odEnsureToken() {
+  if (OD.accessToken && Date.now() < OD.expiresAt) return OD.accessToken;
+  return await odRefreshAccessToken();
+}
+
+async function odLoadAccountInfo() {
+  try {
+    const tk = await odEnsureToken();
+    const r = await fetch('https://graph.microsoft.com/v1.0/me', {
+      headers: { Authorization: 'Bearer ' + tk }
+    });
+    const u = await r.json();
+    OD.account = { name: u.displayName, username: u.userPrincipalName || u.mail };
+    localStorage.setItem('od_account', JSON.stringify(OD.account));
+  } catch {}
+}
+
+function odLogout() {
+  OD.accessToken = null; OD.refreshToken = null; OD.expiresAt = 0;
+  OD.account = null; OD.remoteEtag = null;
+  localStorage.removeItem('od_tokens');
+  localStorage.removeItem('od_account');
+  if (OD.fetchTimer) { clearInterval(OD.fetchTimer); OD.fetchTimer = null; }
+  if (OD.uploadTimer) { clearTimeout(OD.uploadTimer); OD.uploadTimer = null; }
+  odSetStatus('disconnected', 'Đã đăng xuất OneDrive');
+}
+
+// ============ ONEDRIVE: GRAPH API ============
+function _odGraphPath() {
+  // Encode path segments individually so spaces/Unicode work
+  const segs = OD_FILE_PATH.split('/').map(encodeURIComponent).join('/');
+  return `https://graph.microsoft.com/v1.0/me/drive/root:/${segs}`;
+}
+
+async function odDownload() {
+  if (OD.fetching) return null;
+  OD.fetching = true;
+  try {
+    const tk = await odEnsureToken();
+    // Get file metadata + etag first
+    const metaRes = await fetch(_odGraphPath(), {
+      headers: { Authorization: 'Bearer ' + tk }
+    });
+    if (metaRes.status === 404) {
+      // File doesn't exist yet — that's OK, we'll upload first save
+      return { exists: false };
+    }
+    if (!metaRes.ok) throw new Error('Lỗi metadata: ' + metaRes.status);
+    const meta = await metaRes.json();
+    const etag = meta.eTag || meta['@microsoft.graph.downloadUrl'];
+
+    // Get content
+    const dl = meta['@microsoft.graph.downloadUrl'];
+    const cRes = await fetch(dl);
+    if (!cRes.ok) throw new Error('Lỗi tải nội dung: ' + cRes.status);
+    const text = await cRes.text();
+    const json = JSON.parse(text);
+    return { exists: true, json, etag, lastModified: meta.lastModifiedDateTime };
+  } finally {
+    OD.fetching = false;
+  }
+}
+
+async function odUpload(jsonText) {
+  if (OD.uploading) return false;
+  OD.uploading = true;
+  try {
+    const tk = await odEnsureToken();
+    const res = await fetch(_odGraphPath() + ':/content', {
+      method: 'PUT',
+      headers: {
+        Authorization: 'Bearer ' + tk,
+        'Content-Type': 'application/json',
+      },
+      body: jsonText,
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error('Upload thất bại: ' + res.status + ' ' + errText.slice(0, 100));
+    }
+    const meta = await res.json();
+    OD.remoteEtag = meta.eTag;
+    return true;
+  } finally {
+    OD.uploading = false;
+  }
+}
+
+// ============ ONEDRIVE: SYNC ORCHESTRATION ============
+function odSetStatus(status, msg) {
+  OD.status = status;
+  OD.statusMsg = msg || '';
+  updateOdIndicator();
+}
+
+function odIsBusyForUI() {
+  // Don't apply remote changes if user is mid-edit (modal open)
+  return _navStack && _navStack.length > 0;
+}
+
+async function odPullOnce(silent) {
+  if (OD.status !== 'connected') return;
+  try {
+    const r = await odDownload();
+    if (!r) return;
+    if (!r.exists) {
+      // Remote doesn't have file yet → upload local
+      if (data.tasks.length > 0 || data.personalTasks.length > 0) {
+        odSchedulePush();
+      }
+      return;
+    }
+    if (OD.remoteEtag && r.etag === OD.remoteEtag) return; // No change
+    // Don't apply if user is editing — wait until they're free
+    if (odIsBusyForUI()) return;
+
+    // Compare remote vs local — if remote newer (different etag), apply
+    OD.remoteEtag = r.etag;
+    Object.assign(data, r.json);
+    saveLocal();
+    markExported();
+    updateMeta();
+    render();
+    if (!silent) toast('☁️ Đã tải dữ liệu mới từ OneDrive');
+  } catch (e) {
+    odSetStatus('error', 'Lỗi tải: ' + e.message);
+  }
+}
+
+function odSchedulePush() {
+  if (OD.status !== 'connected') return;
+  if (OD.uploadTimer) clearTimeout(OD.uploadTimer);
+  OD.uploadTimer = setTimeout(odPushNow, OD_UPLOAD_DEBOUNCE_MS);
+}
+
+async function odPushNow() {
+  if (OD.status !== 'connected') return;
+  if (OD.uploadTimer) { clearTimeout(OD.uploadTimer); OD.uploadTimer = null; }
+  try {
+    data.savedAt = new Date().toISOString();
+    const json = JSON.stringify(data, null, 2);
+    const ok = await odUpload(json);
+    if (ok) {
+      markExported();
+      updateOdIndicator();
+    }
+  } catch (e) {
+    odSetStatus('error', 'Lỗi upload: ' + e.message);
+  }
+}
+
+function odStartSync() {
+  if (OD.fetchTimer) clearInterval(OD.fetchTimer);
+  // Initial pull on connect
+  odPullOnce();
+  OD.fetchTimer = setInterval(() => odPullOnce(true), OD_FETCH_INTERVAL_MS);
+}
+
+// (saveLocal hook is inlined directly into saveLocal above)
+
+// ============ ONEDRIVE: UI INDICATOR ============
+function updateOdIndicator() {
+  const el = document.getElementById('odIndicator');
+  if (!el) return;
+  const cfg = {
+    disconnected: { icon: '☁️', label: 'Kết nối OneDrive', cls: '' },
+    connecting:   { icon: '⏳', label: 'Đang kết nối...', cls: 'od-ind--busy' },
+    connected:    { icon: '✓', label: OD.account?.name || 'Đã kết nối', cls: 'od-ind--ok' },
+    error:        { icon: '⚠', label: OD.statusMsg || 'Lỗi', cls: 'od-ind--err' },
+  };
+  const c = cfg[OD.status] || cfg.disconnected;
+  el.innerHTML = `<span class="od-ind__icon">${c.icon}</span><span class="od-ind__label">${escapeHtml(c.label)}</span>`;
+  el.className = 'od-ind ' + c.cls;
+  el.onclick = odIndicatorClick;
+}
+function odIndicatorClick() {
+  if (OD.status === 'connected') {
+    if (confirm('Đăng xuất OneDrive?')) odLogout();
+  } else if (OD.status === 'error') {
+    if (confirm('Có lỗi: ' + OD.statusMsg + '\n\nThử đăng nhập lại?')) odBeginLogin();
+  } else {
+    odBeginLogin();
+  }
+}
+
 let data = {
   version: 2,
   tasks: [],
@@ -1070,11 +1667,24 @@ let editing = null;
 let lastFileName = '';
 
 // ============ STORAGE ============
+// Track when data was last saved to localStorage (auto-save) and last exported to file
+let lastSavedAt = null;     // Date — last localStorage write
+let lastExportedAt = null;  // Date — last file export by user (kept across reloads)
+
 function saveLocal() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     if (lastFileName) localStorage.setItem(STORAGE_KEY + '_filename', lastFileName);
-  } catch(e) {}
+    lastSavedAt = new Date();
+    localStorage.setItem(STORAGE_KEY + '_savedAt', lastSavedAt.toISOString());
+    updateSaveIndicator();
+    // OneDrive auto-sync: schedule debounced push if connected
+    if (typeof OD !== 'undefined' && OD.status === 'connected') {
+      odSchedulePush();
+    }
+  } catch(e) {
+    console.error('saveLocal failed', e);
+  }
 }
 function loadLocal() {
   try {
@@ -1084,11 +1694,45 @@ function loadLocal() {
       if (d) {
         data = Object.assign(data, d);
         lastFileName = localStorage.getItem(STORAGE_KEY + '_filename') || '';
+        const sa = localStorage.getItem(STORAGE_KEY + '_savedAt');
+        if (sa) lastSavedAt = new Date(sa);
+        const ea = localStorage.getItem(STORAGE_KEY + '_exportedAt');
+        if (ea) lastExportedAt = new Date(ea);
         return true;
       }
     }
   } catch(e) {}
   return false;
+}
+
+function markExported() {
+  lastExportedAt = new Date();
+  localStorage.setItem(STORAGE_KEY + '_exportedAt', lastExportedAt.toISOString());
+  updateSaveIndicator();
+}
+
+function isUnexported() {
+  if (!lastSavedAt) return false;
+  if (!lastExportedAt) return data.tasks.length > 0;
+  return lastSavedAt > lastExportedAt;
+}
+
+function updateSaveIndicator() {
+  const el = document.getElementById('saveIndicator');
+  if (!el) return;
+  if (!lastSavedAt) {
+    el.textContent = '';
+    el.className = 'save-ind';
+    return;
+  }
+  const time = lastSavedAt.toTimeString().slice(0, 5);
+  if (isUnexported()) {
+    el.innerHTML = `<span class="save-ind__dot save-ind__dot--warn"></span>Đã lưu ${time} · <span class="save-ind__warn">chưa xuất file</span>`;
+    el.className = 'save-ind save-ind--warn';
+  } else {
+    el.innerHTML = `<span class="save-ind__dot save-ind__dot--ok"></span>Đã lưu ${time}`;
+    el.className = 'save-ind';
+  }
 }
 
 // ============ NORMALIZATION ============
@@ -1134,6 +1778,93 @@ function dueLabel(dateStr) {
   return `<span class="pill pill--soon">📅 ${dateStr}</span>`;
 }
 
+// Convert dd/mm/yyyy → yyyy-mm-dd (for native <input type="date">)
+function toIsoDate(s) {
+  if (!s) return '';
+  const m = String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  // already iso?
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  return '';
+}
+// Convert yyyy-mm-dd → dd/mm/yyyy (the format the rest of the app uses)
+function fromIsoDate(s) {
+  if (!s) return '';
+  const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+  return s;
+}
+
+// Render a smart date picker field with quick buttons + native picker
+// inputId: id of the hidden text input that stores dd/mm/yyyy
+function datePickerField(label, inputId, currentValue) {
+  const v = escapeHtml(currentValue || '');
+  return `
+    <div class="field">
+      <label class="field__label">${label}</label>
+      <div class="datepick">
+        <input type="text" class="datepick__display field__input" id="${inputId}" value="${v}" placeholder="dd/mm/yyyy" inputmode="numeric">
+        <button type="button" class="datepick__btn" onclick="openNativeDate('${inputId}')" title="Mở lịch">📅</button>
+        <button type="button" class="datepick__btn datepick__btn--clear" onclick="setDateField('${inputId}', '')" title="Xóa">✕</button>
+      </div>
+      <div class="datepick__quick">
+        <button type="button" class="quick-chip" onclick="setDateOffset('${inputId}', 0)">Hôm nay</button>
+        <button type="button" class="quick-chip" onclick="setDateOffset('${inputId}', 1)">Mai</button>
+        <button type="button" class="quick-chip" onclick="setDateOffset('${inputId}', 3)">+3 ngày</button>
+        <button type="button" class="quick-chip" onclick="setDateOffset('${inputId}', 7)">+1 tuần</button>
+        <button type="button" class="quick-chip" onclick="setDateOffset('${inputId}', 14)">+2 tuần</button>
+        <button type="button" class="quick-chip" onclick="setEndOfMonth('${inputId}')">Cuối tháng</button>
+      </div>
+    </div>`;
+}
+
+// Open native HTML5 date picker (creates a temp <input type="date"> behind the scenes)
+function openNativeDate(inputId) {
+  const target = document.getElementById(inputId);
+  if (!target) return;
+  // Create temporary date input
+  let temp = document.getElementById(inputId + '__tmp');
+  if (!temp) {
+    temp = document.createElement('input');
+    temp.type = 'date';
+    temp.id = inputId + '__tmp';
+    temp.style.position = 'absolute';
+    temp.style.opacity = '0';
+    temp.style.pointerEvents = 'none';
+    temp.style.left = '0';
+    temp.style.top = '0';
+    target.parentElement.appendChild(temp);
+    temp.addEventListener('change', () => {
+      target.value = fromIsoDate(temp.value);
+    });
+  }
+  temp.value = toIsoDate(target.value) || '';
+  // Trigger picker
+  if (typeof temp.showPicker === 'function') {
+    try { temp.showPicker(); return; } catch(e) {}
+  }
+  temp.focus();
+  temp.click();
+}
+
+function setDateField(inputId, value) {
+  const el = document.getElementById(inputId);
+  if (el) el.value = value;
+}
+
+function setDateOffset(inputId, daysFromToday) {
+  const d = new Date();
+  d.setDate(d.getDate() + daysFromToday);
+  setDateField(inputId, fmtDate(d));
+}
+
+function setEndOfMonth(inputId) {
+  const d = new Date();
+  // Last day of current month
+  const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+  setDateField(inputId, fmtDate(last));
+}
+
 // ============ FILE I/O ============
 function handleFile(file) {
   if (!file) return;
@@ -1153,7 +1884,11 @@ function handleFile(file) {
       data.skipReviews = json.skipReviews || {};
       data.version = json.version || 2;
       lastFileName = file.name;
+      // Auto-select current month if it exists in data
+      autoSelectCurrentMonth();
       saveLocal();
+      // Loaded data == file data, so we're "in sync" with the file
+      markExported();
       updateMeta();
       render();
       toast(`✓ ${data.tasks.length} CV · ${data.personalTasks.length} cá nhân · ${data.trackingIssues.length} theo dõi`);
@@ -1162,6 +1897,25 @@ function handleFile(file) {
     }
   };
   reader.readAsText(file);
+}
+
+// Auto-select current month filter if data contains a matching "Tháng N" entry
+function autoSelectCurrentMonth() {
+  const now = new Date();
+  const m = now.getMonth() + 1; // 1-12
+  // Look for various common formats: "Tháng 5", "tháng 5", "T5", "05", "5"
+  const candidates = [`Tháng ${m}`, `tháng ${m}`, `T${m}`, String(m).padStart(2, '0'), String(m)];
+  const availableMonths = [...new Set(data.tasks.map(t => t.thang).filter(Boolean))];
+  for (const c of candidates) {
+    if (availableMonths.includes(c)) {
+      advFilters.thang = c;
+      return;
+    }
+  }
+  // No exact match: try case-insensitive partial match (e.g. data has "Tháng 5/2026")
+  const lcSubstring = `tháng ${m}`;
+  const partial = availableMonths.find(am => String(am).toLowerCase().includes(lcSubstring));
+  if (partial) advFilters.thang = partial;
 }
 
 function exportJson() {
@@ -1180,6 +1934,7 @@ function exportJson() {
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  markExported();
   toast('✓ Đã xuất file. Upload lên OneDrive để đồng bộ.');
 }
 
@@ -1195,14 +1950,75 @@ function updateMeta() {
 }
 
 // ============ TABS ============
+const TAB_ORDER = ['tasks', 'personal', 'tracking'];
+
+function switchTab(name, animateDirection) {
+  if (!TAB_ORDER.includes(name) || name === currentTab) return;
+  const oldTab = currentTab;
+  currentTab = name;
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === name));
+  const sb = document.getElementById('searchBox'); if (sb) sb.value = '';
+  // Optional slide animation when triggered by swipe
+  if (animateDirection) {
+    const content = document.getElementById('content');
+    if (content) {
+      content.classList.remove('slide-in-left', 'slide-in-right');
+      // Force reflow so re-adding the class triggers animation
+      void content.offsetWidth;
+      content.classList.add(animateDirection === 'left' ? 'slide-in-left' : 'slide-in-right');
+    }
+  }
+  render();
+}
+
 document.querySelectorAll('.tab').forEach(t => {
-  t.onclick = () => {
-    currentTab = t.dataset.tab;
-    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
-    document.getElementById('searchBox').value = '';
-    render();
-  };
+  t.onclick = () => switchTab(t.dataset.tab);
 });
+
+// ============ SWIPE GESTURE TO SWITCH TABS ============
+(function setupSwipe() {
+  const content = document.getElementById('content');
+  if (!content) return;
+  let startX = 0, startY = 0, startT = 0, tracking = false;
+
+  // Listen on the main content area only — avoid interfering with edge-swipe (back gesture)
+  content.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) { tracking = false; return; }
+    // Don't start tracking if a modal is currently open
+    if (_navStack && _navStack.length > 0) { tracking = false; return; }
+    const t = e.touches[0];
+    // Avoid the edge zones (left 24px / right 24px) where Android's back gesture lives
+    const w = window.innerWidth || document.documentElement.clientWidth;
+    if (t.clientX < 24 || t.clientX > w - 24) { tracking = false; return; }
+    startX = t.clientX;
+    startY = t.clientY;
+    startT = Date.now();
+    tracking = true;
+  }, { passive: true });
+
+  content.addEventListener('touchend', (e) => {
+    if (!tracking) return;
+    tracking = false;
+    const t = (e.changedTouches && e.changedTouches[0]) || null;
+    if (!t) return;
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+    const dt = Date.now() - startT;
+    // Require: predominantly horizontal, > 60px, faster than 800ms, vertical drift < 60px
+    if (Math.abs(dx) < 60) return;
+    if (Math.abs(dy) > 60) return;
+    if (Math.abs(dx) < Math.abs(dy) * 1.4) return;
+    if (dt > 800) return;
+    const idx = TAB_ORDER.indexOf(currentTab);
+    if (dx < 0 && idx < TAB_ORDER.length - 1) {
+      // Swipe left → next tab
+      switchTab(TAB_ORDER[idx + 1], 'left');
+    } else if (dx > 0 && idx > 0) {
+      // Swipe right → previous tab
+      switchTab(TAB_ORDER[idx - 1], 'right');
+    }
+  }, { passive: true });
+})();
 
 // ============ FILTERS ============
 function getFilterDefs() {
@@ -1246,16 +2062,22 @@ function renderFilters() {
     filters[currentTab === 'personal' ? 'personal' : currentTab] = 'all';
   }
   const f = filters[currentTab === 'personal' ? 'personal' : currentTab];
-  let html = '';
-  defs.forEach(d => {
-    html += `<button class="chip ${d.key === f ? 'active' : ''}" onclick="setFilter('${d.key}')">${d.label}<span class="chip__count">${d.count}</span></button>`;
-  });
-  // Add advanced filter button only for tasks tab
+
+  let advHtml = '';
+  // Pinned adv filter button (outside scroll, always visible)
   if (currentTab === 'tasks') {
     const hasAct = !!(advFilters.duan || advFilters.nguoi || advFilters.thang) || (taskSort.field !== 'thoihan' || taskSort.dir !== 'asc');
-    html += `<button class="chip chip--adv ${hasAct ? 'has-active' : ''}" onclick="openAdvFilter()">⚙ Lọc & Sắp xếp${hasAct ? ' •' : ''}</button>`;
+    advHtml = `<button class="chip chip--adv ${hasAct ? 'has-active' : ''}" onclick="openAdvFilter()">⚙ Lọc${hasAct ? ' •' : ''}</button>`;
   }
-  document.getElementById('filters').innerHTML = html;
+
+  let chipsHtml = '';
+  defs.forEach(d => {
+    chipsHtml += `<button class="chip ${d.key === f ? 'active' : ''}" onclick="setFilter('${d.key}')">${d.label}<span class="chip__count">${d.count}</span></button>`;
+  });
+
+  document.getElementById('filters').innerHTML =
+    advHtml +
+    `<div class="filters__scroll">${chipsHtml}</div>`;
   renderActiveFilterStrip();
 }
 
@@ -1321,14 +2143,37 @@ function setFilter(key) {
 function openAdvFilter() {
   const body = document.getElementById('advFilterBody');
 
-  // Compute unique values from data
-  const duans = [...new Set(data.tasks.map(t => t.duan).filter(Boolean))].sort();
-  const nguois = [...new Set(data.tasks.map(t => t.nguoi).filter(Boolean))].sort();
-  const thangs = [...new Set(data.tasks.map(t => t.thang).filter(Boolean))].sort();
+  // Status filter from main chip row (Tất cả / Chưa làm / Đang làm / Hoàn thành)
+  const statusFilter = filters.tasks; // 'all' | 'todo' | 'doing' | 'done'
+  const matchStatus = (t) => {
+    const s = t.trangthai;
+    if (statusFilter === 'all') return true;
+    if (statusFilter === 'todo')  return !s || s === 'Chưa làm';
+    if (statusFilter === 'doing') return s === 'Đang làm';
+    if (statusFilter === 'done')  return s === 'Hoàn thành';
+    return true;
+  };
 
-  const duanCount = (v) => data.tasks.filter(t => t.duan === v).length;
-  const nguoiCount = (v) => data.tasks.filter(t => t.nguoi === v).length;
-  const thangCount = (v) => data.tasks.filter(t => t.thang === v).length;
+  // Cross-filtered base list: apply already-selected filters AND status chip
+  // when computing the other fields' available options.
+  // This means: when filtering by Tháng 5 + Chưa làm, only projects with
+  // unfinished tasks in May will appear in the project picker.
+  const matchOther = (t, exclude) => {
+    if (!matchStatus(t)) return false;
+    if (exclude !== 'duan'  && advFilters.duan  && t.duan  !== advFilters.duan)  return false;
+    if (exclude !== 'nguoi' && advFilters.nguoi && t.nguoi !== advFilters.nguoi) return false;
+    if (exclude !== 'thang' && advFilters.thang && t.thang !== advFilters.thang) return false;
+    return true;
+  };
+
+  const duans  = [...new Set(data.tasks.filter(t => matchOther(t, 'duan')).map(t => t.duan).filter(Boolean))].sort();
+  const nguois = [...new Set(data.tasks.filter(t => matchOther(t, 'nguoi')).map(t => t.nguoi).filter(Boolean))].sort();
+  const thangs = [...new Set(data.tasks.filter(t => matchOther(t, 'thang')).map(t => t.thang).filter(Boolean))].sort();
+
+  const duanCount  = (v) => data.tasks.filter(t => t.duan  === v && matchOther(t, 'duan')).length;
+  const nguoiCount = (v) => data.tasks.filter(t => t.nguoi === v && matchOther(t, 'nguoi')).length;
+  const thangCount = (v) => data.tasks.filter(t => t.thang === v && matchOther(t, 'thang')).length;
+  const totalCount = data.tasks.filter(t => matchOther(t, null)).length;
 
   let html = '';
 
@@ -1349,46 +2194,86 @@ function openAdvFilter() {
     </div>
   </div>`;
 
-  // FILTER: Dự án
-  html += `<div class="adv-section">
-    <div class="adv-section__title">📁 Dự án</div>
-    <div class="adv-options">
-      <button class="adv-opt ${!advFilters.duan?'active':''}" onclick="setAdv('duan','')">Tất cả <span class="adv-opt__count">${data.tasks.length}</span></button>`;
-  duans.forEach(d => {
-    html += `<button class="adv-opt ${advFilters.duan===d?'active':''}" onclick="setAdv('duan', ${JSON.stringify(d)})">${escapeHtml(d)} <span class="adv-opt__count">${duanCount(d)}</span></button>`;
-  });
-  html += `</div></div>`;
+  // Helper: render a filter section. When a filter is active, only show "Tất cả" + selected value.
+  // Add a search input when list is long (>8 items)
+  function renderFilterSection(title, field, list, countFn, totalLabel) {
+    let h = `<div class="adv-section"><div class="adv-section__title">${title}</div>`;
 
-  // FILTER: Nhân viên
-  html += `<div class="adv-section">
-    <div class="adv-section__title">👤 Nhân viên</div>
-    <div class="adv-options">
-      <button class="adv-opt ${!advFilters.nguoi?'active':''}" onclick="setAdv('nguoi','')">Tất cả</button>`;
-  nguois.forEach(n => {
-    html += `<button class="adv-opt ${advFilters.nguoi===n?'active':''}" onclick="setAdv('nguoi', ${JSON.stringify(n)})">${escapeHtml(n)} <span class="adv-opt__count">${nguoiCount(n)}</span></button>`;
-  });
-  if (nguois.length === 0) html += `<div style="color:var(--ink-3);font-size:13px;padding:4px 0;">Chưa có nhân viên nào trong dữ liệu</div>`;
-  html += `</div></div>`;
+    if (advFilters[field]) {
+      // Selected: show only "Tất cả" (clear) + selected value
+      h += `<div class="adv-options">`;
+      h += `<button class="adv-opt" onclick="clearAdvField('${field}')">⨯ Tất cả${totalLabel?' <span class=\"adv-opt__count\">'+totalLabel+'</span>':''}</button>`;
+      const v = advFilters[field];
+      h += `<button class="adv-opt active" onclick="clearAdvField('${field}')">${escapeHtml(v)} <span class="adv-opt__count">${countFn(v)}</span></button>`;
+      h += `</div>`;
+    } else {
+      // Not selected: show full list with optional search box
+      const useSearch = list.length > 8;
+      if (useSearch) {
+        h += `<input type="search" class="adv-search" id="advSearch_${field}" placeholder="Tìm trong ${title.replace(/^[^\s]+\s/, '')}…">`;
+      }
+      h += `<div class="adv-options" id="advOptions_${field}">`;
+      h += `<button class="adv-opt active" onclick="clearAdvField('${field}')">Tất cả${totalLabel?' <span class=\"adv-opt__count\">'+totalLabel+'</span>':''}</button>`;
+      list.forEach(v => {
+        // Use data-* attributes (escaped via escapeHtml) instead of inline onclick with JSON.stringify
+        // because Vietnamese text with quotes would break the onclick attribute
+        h += `<button class="adv-opt adv-opt--selectable" data-field="${field}" data-value="${escapeHtml(v)}" data-search="${escapeHtml(v).toLowerCase()}">${escapeHtml(v)} <span class="adv-opt__count">${countFn(v)}</span></button>`;
+      });
+      if (list.length === 0) h += `<div style="color:var(--ink-3);font-size:13px;padding:4px 0;">Không có dữ liệu phù hợp</div>`;
+      h += `</div>`;
+    }
+    h += `</div>`;
+    return h;
+  }
 
-  // FILTER: Tháng
-  html += `<div class="adv-section">
-    <div class="adv-section__title">🗓 Tháng</div>
-    <div class="adv-options">
-      <button class="adv-opt ${!advFilters.thang?'active':''}" onclick="setAdv('thang','')">Tất cả</button>`;
-  thangs.forEach(m => {
-    html += `<button class="adv-opt ${advFilters.thang===m?'active':''}" onclick="setAdv('thang', ${JSON.stringify(m)})">${escapeHtml(m)} <span class="adv-opt__count">${thangCount(m)}</span></button>`;
-  });
-  if (thangs.length === 0) html += `<div style="color:var(--ink-3);font-size:13px;padding:4px 0;">Chưa có tháng nào trong dữ liệu</div>`;
-  html += `</div></div>`;
+  html += renderFilterSection('📁 Dự án',     'duan',  duans,  duanCount,  totalCount);
+  html += renderFilterSection('👤 Nhân viên', 'nguoi', nguois, nguoiCount, '');
+  html += renderFilterSection('🗓 Tháng',     'thang', thangs, thangCount, '');
 
   body.innerHTML = html;
-  document.getElementById('advFilterModal').classList.add('show');
+  const modalEl = document.getElementById('advFilterModal');
+  const wasOpen = modalEl.classList.contains('show');
+  modalEl.classList.add('show');
+  // Only push nav state on first open (not on re-render after clearAdvField)
+  if (!wasOpen) _pushNav('advFilter', () => {
+    modalEl.classList.remove('show');
+  });
 
   // Bind sort field
   document.getElementById('advSortField').onchange = function() {
     taskSort.field = this.value;
     render();
   };
+
+  // Event delegation: handle clicks on selectable filter options
+  // (using data-* attrs to avoid quote-escaping issues with Vietnamese text)
+  body.addEventListener('click', function(e) {
+    const btn = e.target.closest('.adv-opt--selectable');
+    if (!btn) return;
+    const field = btn.getAttribute('data-field');
+    const value = btn.getAttribute('data-value');
+    if (field && value !== null) {
+      // Decode HTML entities (since data-value was escaped with escapeHtml)
+      const tmp = document.createElement('textarea');
+      tmp.innerHTML = value;
+      setAdv(field, tmp.value);
+    }
+  });
+
+  // Bind search inputs (filter options as user types)
+  ['duan', 'nguoi', 'thang'].forEach(field => {
+    const inp = document.getElementById('advSearch_' + field);
+    if (!inp) return;
+    inp.addEventListener('input', () => {
+      const q = inp.value.trim().toLowerCase();
+      const container = document.getElementById('advOptions_' + field);
+      if (!container) return;
+      container.querySelectorAll('.adv-opt[data-search]').forEach(btn => {
+        const val = btn.getAttribute('data-search') || '';
+        btn.style.display = (!q || val.includes(q)) ? '' : 'none';
+      });
+    });
+  });
 }
 
 function toggleSortDir() {
@@ -1399,7 +2284,14 @@ function toggleSortDir() {
 
 function setAdv(field, value) {
   advFilters[field] = value;
-  // Re-render the modal options to reflect selection without closing
+  // Close modal immediately for fast feedback — user sees result right away
+  closeAdvFilter();
+  render();
+}
+
+// For when user wants to keep modal open (used by "Tất cả" button to clear single filter)
+function clearAdvField(field) {
+  advFilters[field] = '';
   openAdvFilter();
   render();
 }
@@ -1416,7 +2308,11 @@ function resetAdvFilters(closeModal) {
 }
 
 function closeAdvFilter() {
-  document.getElementById('advFilterModal').classList.remove('show');
+  const el = document.getElementById('advFilterModal');
+  if (el.classList.contains('show')) {
+    el.classList.remove('show');
+    _popNav();
+  }
 }
 
 // ============ RENDER ============
@@ -1510,12 +2406,33 @@ function renderTasks(root, q) {
       groups.get(k).push(t);
     });
     groups.forEach((items, g) => {
+      const icon = groupBy === 'duan' ? '📁 ' : groupBy === 'nguoi' ? '👤 ' : '● ';
       html += `<div class="group">
         <div class="group__header">
-          ${groupBy === 'duan' ? '📁 ' : groupBy === 'nguoi' ? '👤 ' : '● '}${escapeHtml(g)}
+          ${icon}${escapeHtml(g)}
           <span class="group__count">${items.length}</span>
         </div>`;
-      items.forEach(t => { html += renderTaskCard(t); });
+
+      // When grouping by NGUOI: sub-group items by DUAN inside each person
+      if (groupBy === 'nguoi') {
+        const subGroups = new Map();
+        items.forEach(t => {
+          const k = t.duan || '(Không có dự án)';
+          if (!subGroups.has(k)) subGroups.set(k, []);
+          subGroups.get(k).push(t);
+        });
+        // Sort sub-groups alphabetically by project name for consistency
+        const sortedKeys = [...subGroups.keys()].sort((a, b) => a.localeCompare(b, 'vi'));
+        sortedKeys.forEach(k => {
+          const subItems = subGroups.get(k);
+          html += `<div class="subgroup">
+            <div class="subgroup__header">📁 ${escapeHtml(k)} <span class="subgroup__count">${subItems.length}</span></div>`;
+          subItems.forEach(t => { html += renderTaskCard(t); });
+          html += `</div>`;
+        });
+      } else {
+        items.forEach(t => { html += renderTaskCard(t); });
+      }
       html += '</div>';
     });
   } else {
@@ -1528,6 +2445,8 @@ function renderTasks(root, q) {
 
 function renderTaskCard(t) {
   const idx = data.tasks.indexOf(t);
+  // Build dates row for easier comparison: deadline → expected → finished
+  const dates = renderTaskDates(t);
   return `<div class="task ${priorityClass(t)}">
     <div class="task__top">
       <div class="task__title">${escapeHtml(t.congviec || '(Không tiêu đề)')}</div>
@@ -1537,17 +2456,50 @@ function renderTaskCard(t) {
       ${t.duan ? `<span class="meta-item"><span class="meta-item__icon">📁</span>${escapeHtml(t.duan)}</span>` : ''}
       ${t.congdoan ? `<span class="meta-item"><span class="meta-item__icon">📌</span>${escapeHtml(t.congdoan)}</span>` : ''}
       ${t.nguoi ? `<span class="meta-item"><span class="meta-item__icon">👤</span>${escapeHtml(t.nguoi)}</span>` : ''}
-      ${t.thoihan ? `<span class="meta-item"><span class="meta-item__icon">📅</span>${escapeHtml(t.thoihan)}</span>` : ''}
-      ${t.dukien ? `<span class="meta-item"><span class="meta-item__icon">🎯</span>${escapeHtml(t.dukien)}</span>` : ''}
-      ${t.ketthuc ? `<span class="meta-item"><span class="meta-item__icon">✓</span>${escapeHtml(t.ketthuc)}</span>` : ''}
       ${t.phanloai ? `<span class="meta-item"><span class="meta-item__icon">🏷</span>${escapeHtml(t.phanloai)}</span>` : ''}
     </div>
     ${t.ghichu ? `<div class="task__sub">${escapeHtml(t.ghichu)}</div>` : ''}
+    ${dates ? `<div class="task__dates">${dates}</div>` : ''}
     <div class="task__actions">
       <button class="action-btn action-btn--ghost" onclick="openEditor({kind:'tasks',index:${idx}})">📝 Chi tiết</button>
       ${t.trangthai !== 'Hoàn thành' ? `<button class="action-btn action-btn--success" onclick="markDoneTask(${idx})">✓ Xong</button>` : `<button class="action-btn action-btn--warn" onclick="reopenTask(${idx})">↺ Mở lại</button>`}
     </div>
   </div>`;
+}
+
+// Render date comparison row: Hạn → Dự kiến → Xong
+function renderTaskDates(t) {
+  const has = t.thoihan || t.dukien || t.ketthuc;
+  if (!has) return '';
+
+  // Determine status flags for visual cues
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dlDate = parseTaskDate(t.thoihan);
+  const isOverdue = dlDate && dlDate < today && t.trangthai !== 'Hoàn thành';
+  const isDoneEarly = t.ketthuc && dlDate && parseTaskDate(t.ketthuc) <= dlDate;
+  const isDoneLate  = t.ketthuc && dlDate && parseTaskDate(t.ketthuc)  > dlDate;
+
+  const cell = (label, val, cls) =>
+    val ? `<span class="date-cell ${cls||''}">
+      <span class="date-cell__label">${label}</span>
+      <span class="date-cell__val">${escapeHtml(formatShortDate(val))}</span>
+    </span>` : `<span class="date-cell date-cell--empty">
+      <span class="date-cell__label">${label}</span>
+      <span class="date-cell__val">—</span>
+    </span>`;
+
+  return cell('📅 Hạn',     t.thoihan, isOverdue ? 'date-cell--overdue' : '') +
+         cell('🎯 Dự kiến', t.dukien,  '') +
+         cell('✓ Xong',     t.ketthuc, isDoneLate ? 'date-cell--late' : isDoneEarly ? 'date-cell--ontime' : '');
+}
+
+// Format date short: try to keep DD/MM if input is DD/MM/YYYY, else return as-is
+function formatShortDate(s) {
+  if (!s) return '';
+  // Match DD/MM/YYYY or D/M/YYYY → DD/MM
+  const m = String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return `${m[1].padStart(2,'0')}/${m[2].padStart(2,'0')}`;
+  return s;
 }
 
 // ===== SORT =====
@@ -1807,15 +2759,10 @@ function openEditor(target) {
         </div>
       </div>
       <div class="field__row">
-        <div class="field">
-          <label class="field__label">Thời hạn</label>
-          <input class="field__input" id="ed-thoihan" value="${escapeHtml(item?.thoihan)}" placeholder="dd/mm/yyyy">
-        </div>
-        <div class="field">
-          <label class="field__label">Ngày kết thúc</label>
-          <input class="field__input" id="ed-ketthuc" value="${escapeHtml(item?.ketthuc)}" placeholder="dd/mm/yyyy">
-        </div>
+        ${datePickerField('Thời hạn', 'ed-thoihan', item?.thoihan)}
+        ${datePickerField('Ngày dự kiến', 'ed-dukien', item?.dukien)}
       </div>
+      ${datePickerField('Ngày kết thúc', 'ed-ketthuc', item?.ketthuc)}
       <div class="field">
         <label class="field__label">Trạng thái</label>
         <select class="field__select" id="ed-trangthai">
@@ -1871,10 +2818,7 @@ function openEditor(target) {
           <span>★ Đánh dấu quan trọng</span>
         </label>
       </div>
-      <div class="field">
-        <label class="field__label">Hạn (dd/mm/yyyy)</label>
-        <input class="field__input" id="ed-due" value="${escapeHtml(item?.due)}" placeholder="VD: 30/04/2026">
-      </div>
+      ${datePickerField('Hạn', 'ed-due', item?.due)}
       <div class="field">
         <label class="field__label">Ghi chú</label>
         <textarea class="field__textarea" id="ed-note">${escapeHtml(item?.note)}</textarea>
@@ -1902,10 +2846,7 @@ function openEditor(target) {
           <input type="radio" name="ed-pri" id="trpri-l" value="low" ${item?.priority==='low'?'checked':''}><label class="p-low" for="trpri-l">🟢 Nhẹ</label>
         </div>
       </div>
-      <div class="field">
-        <label class="field__label">Ngày nhắc (dd/mm/yyyy)</label>
-        <input class="field__input" id="ed-remindDate" value="${escapeHtml(item?.remindDate)}">
-      </div>
+      ${datePickerField('Ngày nhắc', 'ed-remindDate', item?.remindDate)}
       <div class="field">
         <label class="field__label">Ghi chú</label>
         <textarea class="field__textarea" id="ed-note">${escapeHtml(item?.note)}</textarea>
@@ -1913,7 +2854,13 @@ function openEditor(target) {
     `;
   }
   document.getElementById('editorFields').innerHTML = html;
-  document.getElementById('editorModal').classList.add('show');
+  const editorEl = document.getElementById('editorModal');
+  const wasOpen = editorEl.classList.contains('show');
+  editorEl.classList.add('show');
+  if (!wasOpen) _pushNav('editor', () => {
+    editorEl.classList.remove('show');
+    editing = null;
+  });
 }
 
 function tabLabel(kind) {
@@ -1921,8 +2868,14 @@ function tabLabel(kind) {
 }
 
 function closeEditor() {
-  document.getElementById('editorModal').classList.remove('show');
-  editing = null;
+  const el = document.getElementById('editorModal');
+  if (el.classList.contains('show')) {
+    el.classList.remove('show');
+    editing = null;
+    _popNav();
+  } else {
+    editing = null;
+  }
 }
 
 function val(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
@@ -1947,6 +2900,7 @@ function saveEditor() {
       maduan: val('ed-maduan'),
       stt: String(val('ed-stt')),
       thoihan: val('ed-thoihan'),
+      dukien: val('ed-dukien'),
       ketthuc: val('ed-ketthuc'),
       trangthai: val('ed-trangthai') || 'Chưa làm',
       chatluong: val('ed-chatluong'),
@@ -2223,10 +3177,101 @@ setTimeout(() => {
   }
 }, 2500);
 
+// ============ BACK-GESTURE / HISTORY MANAGEMENT ============
+// Use History API to capture Android back-gesture: instead of exiting the app,
+// each open modal pushes a state. Back gesture = popstate = close the top modal.
+const _navStack = []; // stack of { close: fn, name: string }
+
+function _pushNav(name, closeFn) {
+  // Push a sentinel state so the system back gesture has something to pop
+  history.pushState({ qltkckNav: name }, '');
+  _navStack.push({ name, close: closeFn });
+}
+
+function _popNav() {
+  // Called when user closes via UI (× button) — sync history with stack
+  if (_navStack.length > 0) {
+    _navStack.pop();
+    // Go back in history without triggering our own close (we already closed it)
+    _suppressNextPopstate = true;
+    history.back();
+  }
+}
+
+let _suppressNextPopstate = false;
+let _lastBackAt = 0;
+
+// Push an initial sentinel so the very first back gesture lands here, not on exit.
+// We re-push every time after consuming so there's always a "buffer" entry.
+function _ensureExitBuffer() {
+  history.pushState({ qltkckExitBuffer: true }, '');
+}
+_ensureExitBuffer();
+
+window.addEventListener('popstate', function(e) {
+  if (_suppressNextPopstate) {
+    _suppressNextPopstate = false;
+    return;
+  }
+  // System back gesture triggered.
+  // Case 1: A modal is open — close the top one
+  if (_navStack.length > 0) {
+    const top = _navStack.pop();
+    try { top.close(); } catch(err) {}
+    return;
+  }
+  // Case 2: No modal — require double-back to actually exit
+  const now = Date.now();
+  if (now - _lastBackAt < 2000) {
+    // Second back within 2s — let the navigation happen (will exit app)
+    // Don't push another buffer; allow history to actually go back
+    return;
+  }
+  // First back: show toast and re-push buffer so this back is "consumed"
+  _lastBackAt = now;
+  toast('Trượt lại lần nữa để thoát');
+  _ensureExitBuffer();
+});
+
 // ============ INIT ============
 loadLocal();
+// Auto-select current month if not already filtered by month
+if (!advFilters.thang && data.tasks && data.tasks.length > 0) {
+  autoSelectCurrentMonth();
+}
 updateMeta();
+updateSaveIndicator();
 render();
+
+// Refresh save indicator every 30s so the "Đã lưu HH:MM" stays accurate-ish
+setInterval(updateSaveIndicator, 30000);
+
+// ============ ONEDRIVE INIT ============
+(async function odInit() {
+  // Show indicator (in disconnected state by default)
+  updateOdIndicator();
+
+  // 1. Handle OAuth redirect callback if we just came back from Microsoft login
+  if (location.search.includes('code=') || location.search.includes('error=')) {
+    await odHandleAuthCallback();
+    return;  // Done — odHandleAuthCallback also calls odStartSync on success
+  }
+
+  // 2. Try to restore stored tokens from previous session
+  if (odLoadStoredTokens()) {
+    odSetStatus('connecting', 'Đang kết nối lại...');
+    try {
+      await odEnsureToken();  // Will refresh if needed
+      if (!OD.account) await odLoadAccountInfo();
+      odSetStatus('connected', 'Đã kết nối OneDrive');
+      odStartSync();
+    } catch (e) {
+      // Refresh failed — need full re-login
+      odSetStatus('disconnected', 'Phiên hết hạn — đăng nhập lại');
+      localStorage.removeItem('od_tokens');
+    }
+  }
+})();
 </script>
 </body>
 </html>
