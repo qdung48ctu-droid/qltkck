@@ -1585,15 +1585,18 @@ async function odPushNow() {
   if (OD.status !== 'connected') return;
   if (OD.uploadTimer) { clearTimeout(OD.uploadTimer); OD.uploadTimer = null; }
   try {
+    if (typeof toast === 'function') toast('☁️ Đang upload...');
     data.savedAt = new Date().toISOString();
     const json = JSON.stringify(data, null, 2);
     const ok = await odUpload(json);
     if (ok) {
       markExported();
       updateOdIndicator();
+      if (typeof toast === 'function') toast('☁️ ✓ Đã upload OneDrive');
     }
   } catch (e) {
     odSetStatus('error', 'Lỗi upload: ' + e.message);
+    if (typeof toast === 'function') toast('☁️ ✗ Lỗi upload: ' + e.message.slice(0, 60));
   }
 }
 
@@ -1613,22 +1616,40 @@ function updateOdIndicator() {
   const cfg = {
     disconnected: { icon: '☁️', label: 'Kết nối OneDrive', cls: '' },
     connecting:   { icon: '⏳', label: 'Đang kết nối...', cls: 'od-ind--busy' },
-    connected:    { icon: '✓', label: OD.account?.name || 'Đã kết nối', cls: 'od-ind--ok' },
+    connected:    { icon: '✓', label: (OD.account?.name || 'Đã kết nối') + ' · Bấm để sync', cls: 'od-ind--ok' },
     error:        { icon: '⚠', label: OD.statusMsg || 'Lỗi', cls: 'od-ind--err' },
   };
   const c = cfg[OD.status] || cfg.disconnected;
   el.innerHTML = `<span class="od-ind__icon">${c.icon}</span><span class="od-ind__label">${escapeHtml(c.label)}</span>`;
   el.className = 'od-ind ' + c.cls;
   el.onclick = odIndicatorClick;
+  el.onpointerdown = odIndicatorPressStart;
+  el.onpointerup = odIndicatorPressEnd;
+  el.onpointerleave = odIndicatorPressEnd;
+  el.onpointercancel = odIndicatorPressEnd;
 }
 function odIndicatorClick() {
   if (OD.status === 'connected') {
-    if (confirm('Đăng xuất OneDrive?')) odLogout();
+    // Click while connected = force sync now
+    odPushNow();
+    odPullOnce();
   } else if (OD.status === 'error') {
     if (confirm('Có lỗi: ' + OD.statusMsg + '\n\nThử đăng nhập lại?')) odBeginLogin();
   } else {
     odBeginLogin();
   }
+}
+// Long-press the indicator to logout
+let _odLongPressTimer = null;
+function odIndicatorPressStart() {
+  if (OD.status !== 'connected') return;
+  _odLongPressTimer = setTimeout(() => {
+    if (confirm('Đăng xuất OneDrive?')) odLogout();
+    _odLongPressTimer = null;
+  }, 800);
+}
+function odIndicatorPressEnd() {
+  if (_odLongPressTimer) { clearTimeout(_odLongPressTimer); _odLongPressTimer = null; }
 }
 
 let data = {
