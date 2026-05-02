@@ -667,6 +667,15 @@ main {
   flex-shrink: 0;
 }
 
+/* Note creation date in top-right of note card */
+.note__date {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-weight: 600;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
 .task__meta {
   display: flex;
   flex-wrap: wrap;
@@ -1194,7 +1203,11 @@ input[type="file"] { display: none; }
   </button>
   <button class="tab" data-tab="personal">
     <span class="tab__icon">✏️</span>
-    <span class="tab__label">Cá nhân <span class="tab__count" id="cnt-personal">0</span></span>
+    <span class="tab__label">Việc <span class="tab__count" id="cnt-personal">0</span></span>
+  </button>
+  <button class="tab" data-tab="notes">
+    <span class="tab__icon">💡</span>
+    <span class="tab__label">Ghi nhớ <span class="tab__count" id="cnt-notes">0</span></span>
   </button>
   <button class="tab" data-tab="tracking">
     <span class="tab__icon">👁</span>
@@ -1670,6 +1683,7 @@ let currentTab = 'tasks';
 let filters = {
   tasks: 'todo',     // all | todo | doing | done
   personal: 'todo',  // all | todo | done | star
+  notes: 'all',      // all | idea | info | done
   tracking: 'active' // all | active | done
 };
 
@@ -1960,18 +1974,21 @@ function exportJson() {
 }
 
 function updateMeta() {
-  const total = data.tasks.length + data.personalTasks.length + data.trackingIssues.length;
+  const notesCount = (data.personalNotes || []).length;
+  const total = data.tasks.length + data.personalTasks.length + notesCount + data.trackingIssues.length;
   document.getElementById('fileMeta').textContent =
     lastFileName ? `${lastFileName} · ${total} mục` : 'Chưa có file dữ liệu — bấm 📂 để mở';
   document.getElementById('fileDot').classList.toggle('empty', !lastFileName);
   // Update tab counts
   document.getElementById('cnt-tasks').textContent = data.tasks.length;
   document.getElementById('cnt-personal').textContent = data.personalTasks.length;
+  const elNotes = document.getElementById('cnt-notes');
+  if (elNotes) elNotes.textContent = notesCount;
   document.getElementById('cnt-tracking').textContent = data.trackingIssues.length;
 }
 
 // ============ TABS ============
-const TAB_ORDER = ['tasks', 'personal', 'tracking'];
+const TAB_ORDER = ['tasks', 'personal', 'notes', 'tracking'];
 
 function switchTab(name, animateDirection) {
   if (!TAB_ORDER.includes(name) || name === currentTab) return;
@@ -2063,6 +2080,17 @@ function getFilterDefs() {
       { key: 'star', label: '★ Quan trọng', count: star },
       { key: 'done', label: '✓ Đã xong',    count: done }
     ];
+  } else if (currentTab === 'notes') {
+    const notes = data.personalNotes || [];
+    const ideas = notes.filter(n => n.group === 'idea' && !n.done).length;
+    const infos = notes.filter(n => n.group === 'info' && !n.done).length;
+    const done  = notes.filter(n => n.done).length;
+    return [
+      { key: 'all',  label: 'Tất cả',         count: notes.length },
+      { key: 'idea', label: '💡 Ý tưởng',     count: ideas },
+      { key: 'info', label: '📌 Thông tin',   count: infos },
+      { key: 'done', label: '✓ Đã xong',      count: done }
+    ];
   } else {
     const active = data.trackingIssues.filter(t => !t.done).length;
     const done = data.trackingIssues.filter(t => t.done).length;
@@ -2076,13 +2104,13 @@ function getFilterDefs() {
 
 function renderFilters() {
   const defs = getFilterDefs();
-  const cur = filters[currentTab === 'personal' ? 'personal' : currentTab];
+  const cur = filters[currentTab];
   // ensure current filter still exists
   const exists = defs.some(d => d.key === cur);
   if (!exists) {
-    filters[currentTab === 'personal' ? 'personal' : currentTab] = 'all';
+    filters[currentTab] = 'all';
   }
-  const f = filters[currentTab === 'personal' ? 'personal' : currentTab];
+  const f = filters[currentTab];
 
   let advHtml = '';
   // Pinned adv filter button (outside scroll, always visible)
@@ -2156,7 +2184,7 @@ function clearActiveFilter(key) {
 }
 
 function setFilter(key) {
-  filters[currentTab === 'personal' ? 'personal' : currentTab] = key;
+  filters[currentTab] = key;
   render();
 }
 
@@ -2373,6 +2401,7 @@ function render() {
   const search = document.getElementById('searchBox').value.toLowerCase().trim();
   if (currentTab === 'tasks') renderTasks(root, search);
   else if (currentTab === 'personal') renderPersonal(root, search);
+  else if (currentTab === 'notes') renderNotes(root, search);
   else renderTracking(root, search);
 }
 
@@ -2641,6 +2670,99 @@ function toggleSubtask(taskId, subId) {
   render();
 }
 
+// ===== NOTES (Ghi nhớ — Ý tưởng + Thông tin) =====
+function renderNotes(root, q) {
+  if (!Array.isArray(data.personalNotes)) data.personalNotes = [];
+  const f = filters.notes;
+  let list = data.personalNotes.slice();
+  if (f === 'idea')      list = list.filter(n => n.group === 'idea' && !n.done);
+  else if (f === 'info') list = list.filter(n => n.group === 'info' && !n.done);
+  else if (f === 'done') list = list.filter(n => n.done);
+
+  if (q) {
+    list = list.filter(n =>
+      matchSearch(n.title, q) ||
+      matchSearch(n.content, q) ||
+      matchSearch(n.purpose, q));
+  }
+
+  // Sort: not done first, then by createdAt desc
+  list.sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    const ta = new Date(a.createdAt || 0).getTime();
+    const tb = new Date(b.createdAt || 0).getTime();
+    return tb - ta;
+  });
+
+  if (list.length === 0) {
+    root.innerHTML = emptyHtml('💡', 'Chưa có ghi nhớ', q ? 'Không tìm thấy kết quả' : 'Bấm + để thêm');
+    return;
+  }
+
+  // Group by category (idea/info) so user sees clear separation
+  const ideas = list.filter(n => n.group === 'idea');
+  const infos = list.filter(n => n.group === 'info');
+  const others = list.filter(n => n.group !== 'idea' && n.group !== 'info');
+
+  let html = '';
+  if (ideas.length) {
+    html += `<div class="group">
+      <div class="group__header">💡 Ý tưởng <span class="group__count">${ideas.length}</span></div>`;
+    ideas.forEach(n => { html += renderNoteCard(n); });
+    html += '</div>';
+  }
+  if (infos.length) {
+    html += `<div class="group">
+      <div class="group__header">📌 Thông tin ghi nhớ <span class="group__count">${infos.length}</span></div>`;
+    infos.forEach(n => { html += renderNoteCard(n); });
+    html += '</div>';
+  }
+  if (others.length) {
+    html += `<div class="group">
+      <div class="group__header">📝 Khác <span class="group__count">${others.length}</span></div>`;
+    others.forEach(n => { html += renderNoteCard(n); });
+    html += '</div>';
+  }
+
+  root.innerHTML = html;
+}
+
+function renderNoteCard(n) {
+  const idx = data.personalNotes.indexOf(n);
+  const dateLabel = formatNoteDate(n.createdAt);
+  const cls = n.done ? 'task task--done' : 'task';
+  return `<div class="${cls}">
+    <div class="task__top">
+      <div class="task__title">${escapeHtml(n.title || '(Không tiêu đề)')}</div>
+      ${dateLabel ? `<div class="note__date">${dateLabel}</div>` : ''}
+    </div>
+    ${n.purpose ? `<div class="task__sub">🎯 ${escapeHtml(n.purpose)}</div>` : ''}
+    ${n.content ? `<div class="task__sub">${escapeHtml(n.content)}</div>` : ''}
+    <div class="task__actions">
+      <button class="action-btn action-btn--ghost" onclick="openEditor({kind:'personalNotes',index:${idx}})">📝 Sửa</button>
+      <button class="action-btn ${n.done ? 'action-btn--warn' : 'action-btn--success'}" onclick="toggleNoteDone(${idx})">${n.done ? '↺ Mở lại' : '✓ Xong'}</button>
+    </div>
+  </div>`;
+}
+
+function formatNoteDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  return `${dd}/${mm}`;
+}
+
+function toggleNoteDone(idx) {
+  if (!Array.isArray(data.personalNotes) || !data.personalNotes[idx]) return;
+  const n = data.personalNotes[idx];
+  n.done = !n.done;
+  n.updatedAt = new Date().toISOString();
+  saveLocal();
+  render();
+}
+
 // ===== TRACKING =====
 function renderTracking(root, q) {
   const f = filters.tracking;
@@ -2732,7 +2854,12 @@ function deleteCurrent() {
 // ============ EDITOR ============
 function openEditor(target) {
   editing = target;
-  const kind = target ? target.kind : (currentTab === 'tasks' ? 'tasks' : currentTab === 'personal' ? 'personalTasks' : 'trackingIssues');
+  const kind = target ? target.kind : (
+    currentTab === 'tasks' ? 'tasks' :
+    currentTab === 'personal' ? 'personalTasks' :
+    currentTab === 'notes' ? 'personalNotes' :
+    'trackingIssues'
+  );
   if (target) editing.kind = kind;
   const item = target ? data[kind][target.index] : null;
   document.getElementById('editorTitle').textContent = (item ? '✏ Sửa ' : '＋ Thêm ') + tabLabel(kind);
@@ -2845,6 +2972,29 @@ function openEditor(target) {
         <textarea class="field__textarea" id="ed-note">${escapeHtml(item?.note)}</textarea>
       </div>
     `;
+  } else if (kind === 'personalNotes') {
+    const grp = item?.group || (filters.notes === 'info' ? 'info' : 'idea');
+    html = `
+      <div class="field">
+        <label class="field__label">Tiêu đề *</label>
+        <input class="field__input" id="ed-title" value="${escapeHtml(item?.title)}">
+      </div>
+      <div class="field">
+        <label class="field__label">Loại</label>
+        <div class="priority-pills">
+          <input type="radio" name="ed-grp" id="grp-i" value="idea" ${grp==='idea'?'checked':''}><label class="p-normal" for="grp-i">💡 Ý tưởng</label>
+          <input type="radio" name="ed-grp" id="grp-n" value="info" ${grp==='info'?'checked':''}><label class="p-normal" for="grp-n">📌 Thông tin</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field__label">Mục đích</label>
+        <input class="field__input" id="ed-purpose" value="${escapeHtml(item?.purpose)}">
+      </div>
+      <div class="field">
+        <label class="field__label">Nội dung</label>
+        <textarea class="field__textarea" id="ed-content" rows="5">${escapeHtml(item?.content)}</textarea>
+      </div>
+    `;
   } else if (kind === 'trackingIssues') {
     html = `
       <div class="field">
@@ -2885,7 +3035,10 @@ function openEditor(target) {
 }
 
 function tabLabel(kind) {
-  return kind === 'tasks' ? 'công việc' : kind === 'personalTasks' ? 'task cá nhân' : 'mục theo dõi';
+  if (kind === 'tasks') return 'công việc';
+  if (kind === 'personalTasks') return 'việc cần làm';
+  if (kind === 'personalNotes') return 'ghi nhớ';
+  return 'mục theo dõi';
 }
 
 function closeEditor() {
@@ -2903,7 +3056,12 @@ function val(id) { const el = document.getElementById(id); return el ? el.value.
 function numVal(id) { const v = val(id); return v === '' ? '' : Number(v); }
 
 function saveEditor() {
-  const kind = editing ? editing.kind : (currentTab === 'tasks' ? 'tasks' : currentTab === 'personal' ? 'personalTasks' : 'trackingIssues');
+  const kind = editing ? editing.kind : (
+    currentTab === 'tasks' ? 'tasks' :
+    currentTab === 'personal' ? 'personalTasks' :
+    currentTab === 'notes' ? 'personalNotes' :
+    'trackingIssues'
+  );
   const target = editing;
   let item;
 
@@ -2947,6 +3105,22 @@ function saveEditor() {
       done: orig.done || false,
       subs: orig.subs || [],
       createdAt: orig.createdAt || new Date().toISOString()
+    };
+  } else if (kind === 'personalNotes') {
+    if (!val('ed-title')) return toast('Nhập tiêu đề');
+    const grp = document.querySelector('input[name="ed-grp"]:checked')?.value || 'idea';
+    if (!Array.isArray(data.personalNotes)) data.personalNotes = [];
+    const orig = target ? data.personalNotes[target.index] : {};
+    item = {
+      ...orig,
+      id: orig.id || Date.now(),
+      title: val('ed-title'),
+      content: val('ed-content'),
+      group: grp,
+      purpose: val('ed-purpose'),
+      done: orig.done || false,
+      createdAt: orig.createdAt || new Date().toISOString(),
+      updatedAt: target ? new Date().toISOString() : null
     };
   } else if (kind === 'trackingIssues') {
     if (!val('ed-content')) return toast('Nhập nội dung');
