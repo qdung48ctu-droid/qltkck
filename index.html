@@ -756,36 +756,129 @@ main {
   border-top: 1px dashed var(--line);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 .subitem {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 0;
+  gap: 10px;
+  padding: 7px 4px;
   font-size: 13px;
+  border-radius: 6px;
 }
+.subitem:active { background: var(--surface-2); }
 .subitem__check {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   border: 1.5px solid var(--line-2);
-  border-radius: 5px;
+  border-radius: 6px;
   display: grid;
   place-items: center;
   flex-shrink: 0;
   cursor: pointer;
   transition: all .15s;
+  font-size: 14px;
+  font-weight: 700;
 }
 .subitem--done .subitem__check {
   background: var(--green);
   border-color: var(--green);
   color: #fff;
 }
-.subitem__text { flex: 1; word-break: break-word; }
+.subitem__text { flex: 1; word-break: break-word; line-height: 1.4; }
 .subitem--done .subitem__text {
   text-decoration: line-through;
   color: var(--ink-3);
 }
+
+/* Subtasks editor (in personalTasks editor modal) */
+.subs-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.subs-empty {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  font-style: italic;
+  padding: 8px 4px;
+}
+.sub-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  transition: opacity .15s, transform .15s, box-shadow .15s;
+}
+.sub-edit.dragging {
+  opacity: 0.4;
+}
+.sub-edit.drag-over {
+  box-shadow: 0 0 0 2px var(--primary) inset;
+  background: rgba(11, 36, 71, 0.06);
+}
+.sub-edit__handle {
+  flex-shrink: 0;
+  font-size: 16px;
+  color: var(--ink-3);
+  cursor: grab;
+  padding: 4px 6px;
+  user-select: none;
+  touch-action: none;
+  letter-spacing: -2px;
+  font-weight: 700;
+}
+.sub-edit__handle:active { cursor: grabbing; }
+.sub-edit__check {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--green);
+}
+.sub-edit__text {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 7px 9px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--ink);
+  min-width: 0;
+}
+.sub-edit__text:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+.sub-edit__del {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--ink-3);
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.sub-edit__del:active {
+  background: var(--surface);
+  color: var(--red);
+}
+.subs-add {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+.subs-add .field__input { flex: 1; margin: 0; }
+.subs-add .action-btn { flex-shrink: 0; padding: 0 14px; }
 
 /* Status / priority pills */
 .pill {
@@ -2978,6 +3071,14 @@ function openEditor(target) {
           <span>★ Đánh dấu quan trọng</span>
         </label>
       </div>
+      <div class="field">
+        <label class="field__label">Nhiệm vụ con</label>
+        <div class="subs-editor" id="subsEditor"></div>
+        <div class="subs-add">
+          <input class="field__input" id="ed-newsub" placeholder="Thêm nhiệm vụ con..." onkeydown="if(event.key==='Enter'){event.preventDefault();addSubFromInput();}">
+          <button type="button" class="action-btn action-btn--primary" onclick="addSubFromInput()">+ Thêm</button>
+        </div>
+      </div>
       ${datePickerField('Hạn', 'ed-due', item?.due)}
       <div class="field">
         <label class="field__label">Ghi chú</label>
@@ -3037,12 +3138,151 @@ function openEditor(target) {
     `;
   }
   document.getElementById('editorFields').innerHTML = html;
+  // Initialize subs working state for personalTasks editor
+  if (kind === 'personalTasks') {
+    const orig = item && Array.isArray(item.subs) ? item.subs : [];
+    // Deep clone so cancel does not mutate
+    _editorSubs = orig.map(s => ({ id: s.id || Date.now() + Math.random(), text: s.text || '', done: !!s.done }));
+    renderSubsEditor();
+  } else {
+    _editorSubs = null;
+  }
   const editorEl = document.getElementById('editorModal');
   const wasOpen = editorEl.classList.contains('show');
   editorEl.classList.add('show');
   if (!wasOpen) _pushNav('editor', () => {
     editorEl.classList.remove('show');
     editing = null;
+    _editorSubs = null;
+  });
+}
+
+// ============ SUBTASKS EDITOR (within personalTasks editor) ============
+let _editorSubs = null; // working copy of subs while editing
+
+function renderSubsEditor() {
+  const wrap = document.getElementById('subsEditor');
+  if (!wrap || !Array.isArray(_editorSubs)) return;
+  if (_editorSubs.length === 0) {
+    wrap.innerHTML = '<div class="subs-empty">Chưa có nhiệm vụ con. Thêm bên dưới.</div>';
+    return;
+  }
+  let html = '';
+  _editorSubs.forEach((s, i) => {
+    html += `<div class="sub-edit" draggable="true" data-idx="${i}">
+      <div class="sub-edit__handle" aria-label="Kéo">⋮⋮</div>
+      <input type="checkbox" class="sub-edit__check" ${s.done ? 'checked' : ''} onchange="toggleEditorSub(${i})">
+      <input type="text" class="sub-edit__text" value="${escapeHtml(s.text)}" oninput="updateEditorSub(${i}, this.value)" placeholder="Nội dung...">
+      <button type="button" class="sub-edit__del" onclick="removeEditorSub(${i})" aria-label="Xóa">✕</button>
+    </div>`;
+  });
+  wrap.innerHTML = html;
+  bindSubsDragDrop(wrap);
+}
+
+function addSubFromInput() {
+  const inp = document.getElementById('ed-newsub');
+  if (!inp || !Array.isArray(_editorSubs)) return;
+  const text = inp.value.trim();
+  if (!text) { inp.focus(); return; }
+  _editorSubs.push({ id: Date.now() + Math.floor(Math.random()*1000), text, done: false });
+  inp.value = '';
+  renderSubsEditor();
+  inp.focus();
+}
+
+function updateEditorSub(i, val) {
+  if (!Array.isArray(_editorSubs) || !_editorSubs[i]) return;
+  _editorSubs[i].text = val;
+  // No re-render here so cursor position stays
+}
+
+function toggleEditorSub(i) {
+  if (!Array.isArray(_editorSubs) || !_editorSubs[i]) return;
+  _editorSubs[i].done = !_editorSubs[i].done;
+}
+
+function removeEditorSub(i) {
+  if (!Array.isArray(_editorSubs)) return;
+  _editorSubs.splice(i, 1);
+  renderSubsEditor();
+}
+
+// Drag-and-drop reorder for subtasks in editor
+function bindSubsDragDrop(wrap) {
+  let dragIdx = null;
+  wrap.querySelectorAll('.sub-edit').forEach(el => {
+    el.addEventListener('dragstart', (e) => {
+      dragIdx = parseInt(el.dataset.idx, 10);
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      // Firefox needs data set
+      try { e.dataTransfer.setData('text/plain', String(dragIdx)); } catch (_) {}
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      wrap.querySelectorAll('.sub-edit').forEach(x => x.classList.remove('drag-over'));
+      dragIdx = null;
+    });
+    el.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      wrap.querySelectorAll('.sub-edit').forEach(x => x.classList.remove('drag-over'));
+      el.classList.add('drag-over');
+    });
+    el.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const targetIdx = parseInt(el.dataset.idx, 10);
+      if (dragIdx === null || dragIdx === targetIdx) return;
+      const moved = _editorSubs.splice(dragIdx, 1)[0];
+      _editorSubs.splice(targetIdx, 0, moved);
+      renderSubsEditor();
+    });
+  });
+
+  // Touch support: long-press handle to start drag
+  wrap.querySelectorAll('.sub-edit').forEach(el => {
+    const handle = el.querySelector('.sub-edit__handle');
+    if (!handle) return;
+    let touchStartY = null, touchStartIdx = null, ghost = null, lastOver = null;
+    handle.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      touchStartIdx = parseInt(el.dataset.idx, 10);
+      touchStartY = e.touches[0].clientY;
+      el.classList.add('dragging');
+    }, { passive: false });
+    handle.addEventListener('touchmove', (e) => {
+      if (touchStartIdx === null) return;
+      e.preventDefault();
+      const y = e.touches[0].clientY;
+      const target = document.elementFromPoint(e.touches[0].clientX, y);
+      const overEl = target ? target.closest('.sub-edit') : null;
+      if (lastOver && lastOver !== overEl) lastOver.classList.remove('drag-over');
+      if (overEl && overEl !== el) {
+        overEl.classList.add('drag-over');
+        lastOver = overEl;
+      }
+    }, { passive: false });
+    handle.addEventListener('touchend', (e) => {
+      if (touchStartIdx === null) return;
+      el.classList.remove('dragging');
+      if (lastOver) {
+        const targetIdx = parseInt(lastOver.dataset.idx, 10);
+        if (!isNaN(targetIdx) && targetIdx !== touchStartIdx) {
+          const moved = _editorSubs.splice(touchStartIdx, 1)[0];
+          _editorSubs.splice(targetIdx, 0, moved);
+          renderSubsEditor();
+        }
+        lastOver.classList.remove('drag-over');
+        lastOver = null;
+      }
+      touchStartIdx = null; touchStartY = null;
+    });
+    handle.addEventListener('touchcancel', () => {
+      el.classList.remove('dragging');
+      if (lastOver) lastOver.classList.remove('drag-over');
+      touchStartIdx = null;
+    });
   });
 }
 
@@ -3058,9 +3298,11 @@ function closeEditor() {
   if (el.classList.contains('show')) {
     el.classList.remove('show');
     editing = null;
+    _editorSubs = null;
     _popNav();
   } else {
     editing = null;
+    _editorSubs = null;
   }
 }
 
@@ -3105,6 +3347,14 @@ function saveEditor() {
     if (!val('ed-title')) return toast('Nhập tiêu đề');
     const pri = document.querySelector('input[name="ed-pri"]:checked')?.value || 'normal';
     const orig = target ? data.personalTasks[target.index] : {};
+    // Use editor working subs (filter out empty entries)
+    const subs = Array.isArray(_editorSubs)
+      ? _editorSubs.filter(s => s.text && s.text.trim()).map(s => ({
+          id: s.id || Date.now() + Math.floor(Math.random()*1000),
+          text: s.text.trim(),
+          done: !!s.done
+        }))
+      : (orig.subs || []);
     item = {
       ...orig,
       id: orig.id || Date.now(),
@@ -3115,7 +3365,7 @@ function saveEditor() {
       note: val('ed-note'),
       star: document.getElementById('ed-star').checked,
       done: orig.done || false,
-      subs: orig.subs || [],
+      subs: subs,
       createdAt: orig.createdAt || new Date().toISOString()
     };
   } else if (kind === 'personalNotes') {
